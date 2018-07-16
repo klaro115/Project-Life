@@ -1,0 +1,16 @@
+﻿using System.Collections;
+using UnityEngine;
+
+namespace UFaceAnim
+{
+	[System.Serializable]
+	[CreateAssetMenu(menuName="Face Anims/new Preset", fileName="new FAPreset")]
+	public class FAPresets : ScriptableObject
+	{
+		#region Fields
+
+		public FABlendSetup blendShapeSetup = FABlendSetup.Default;
+
+		#endregion
+	}
+}

@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec3427e93f021cf41b93fd3a0b505cb3, type: 3}
+  m_Name: SelinaTest
+  m_EditorClassIdentifier: 
+  blendShapeSetup:
+    blendCurve: 0
+    blendStateJoy:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsInOut: 0
+      browsL: 0
+      browsR: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateSadness:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsInOut: 0
+      browsL: 0
+      browsR: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateAnger:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsInOut: 0
+      browsL: 0
+      browsR: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateFear:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsInOut: 0
+      browsL: 0
+      browsR: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateTrust:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsInOut: 0
+      browsL: 0
+      browsR: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateDisgust:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsInOut: 0
+      browsL: 0
+      browsR: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateSurprise:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsInOut: 0
+      browsL: 0
+      browsR: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateAnticipation:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsInOut: 0
+      browsL: 0
+      browsR: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateNeutral:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsInOut: 0
+      browsL: 0
+      browsR: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
