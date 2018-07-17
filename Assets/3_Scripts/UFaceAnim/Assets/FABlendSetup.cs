@@ -3,8 +3,10 @@ using UnityEngine;
 
 namespace UFaceAnim
 {
+	// EMOTION BASED BLEND STATE SETUP:
+
 	[System.Serializable]
-	public struct FABlendSetup
+	public struct FABlendSetupEmotion
 	{
 		#region Fields
 
@@ -23,11 +25,11 @@ namespace UFaceAnim
 		#endregion
 		#region Properties
 
-		public static FABlendSetup Default
+		public static FABlendSetupEmotion Default
 		{
 			get
 			{
-				FABlendSetup bs = new FABlendSetup();
+				FABlendSetupEmotion bs = new FABlendSetupEmotion();
 
 				bs.blendCurve = FABlendCurve.Linear;
 
@@ -40,6 +42,57 @@ namespace UFaceAnim
 				bs.blendStateSurprise = FABlendState.Default;
 				bs.blendStateAnticipation = FABlendState.Default;
 				bs.blendStateNeutral = FABlendState.Default;
+
+				return bs;
+			}
+		}
+
+		#endregion
+	}
+
+	// SPEECH BASED BLEND STATE SETUP:
+
+	[System.Serializable]
+	public struct FABlendSetupSpeech
+	{
+		#region Fields
+
+		public FABlendCurve blendCurve;
+
+		public FABlendState blendStateGroup0;
+		public FABlendState blendStateGroup1;
+		public FABlendState blendStateGroup2;
+		public FABlendState blendStateGroup3;
+		public FABlendState blendStateGroup4;
+		public FABlendState blendStateGroup5;
+		public FABlendState blendStateGroup6;
+		public FABlendState blendStateGroup7;
+		public FABlendState blendStateGroup8;
+		public FABlendState blendStateGroup9;
+		public FABlendState blendStateSilence;
+
+		#endregion
+		#region Properties
+
+		public static FABlendSetupSpeech Default
+		{
+			get
+			{
+				FABlendSetupSpeech bs = new FABlendSetupSpeech();
+
+				bs.blendCurve = FABlendCurve.Linear;
+
+				bs.blendStateGroup0 = FABlendState.Default;
+				bs.blendStateGroup1 = FABlendState.Default;
+				bs.blendStateGroup2 = FABlendState.Default;
+				bs.blendStateGroup3 = FABlendState.Default;
+				bs.blendStateGroup4 = FABlendState.Default;
+				bs.blendStateGroup5 = FABlendState.Default;
+				bs.blendStateGroup6 = FABlendState.Default;
+				bs.blendStateGroup7 = FABlendState.Default;
+				bs.blendStateGroup8 = FABlendState.Default;
+				bs.blendStateGroup9 = FABlendState.Default;
+				bs.blendStateSilence = FABlendState.Default;
 
 				return bs;
 			}

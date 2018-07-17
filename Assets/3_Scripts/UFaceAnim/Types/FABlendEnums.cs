@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+﻿
 namespace UFaceAnim
 {
 	public enum FABlendCurve
@@ -21,13 +18,15 @@ namespace UFaceAnim
 		MouthCornerL,
 		MouthCornerR,
 
-		BrowsInOut,
 		BrowsL,
 		BrowsR,
+		BrowsInOut,
 		BrowsSharpFlat,
 
 		EyesCloseL,
 		EyesCloseR,
 		EyesWander,
+		EyesDirX,
+		EyesDirY,
 	}
 }

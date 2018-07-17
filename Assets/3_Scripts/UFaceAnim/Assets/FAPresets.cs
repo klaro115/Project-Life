@@ -9,7 +9,8 @@ namespace UFaceAnim
 	{
 		#region Fields
 
-		public FABlendSetup blendShapeSetup = FABlendSetup.Default;
+		public FABlendSetupEmotion blendShapeSetup = FABlendSetupEmotion.Default;
+		public FABlendSetupSpeech blendShapesSpeech = FABlendSetupSpeech.Default;
 
 		#endregion
 	}

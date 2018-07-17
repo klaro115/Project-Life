@@ -22,6 +22,7 @@ namespace UFaceAnim
 		#region Fields
 
 		public Target[] targets = new Target[1] { Target.None };
+		private int blendShapeCount = 1;
 
 		private SkinnedMeshRenderer rend = null;
 
@@ -32,9 +33,10 @@ namespace UFaceAnim
 		{
 			// Retrieve the skinned mesh renderer used for controlling the blend shapes:
 			rend = GetComponent<SkinnedMeshRenderer>();
+			blendShapeCount = rend.sharedMesh.blendShapeCount;
 
 			// Make sure the blend shape count matches the target array size:
-			int shapeCount = Mathf.Max(rend.sharedMesh.blendShapeCount, targets.Length);
+			int shapeCount = Mathf.Max(blendShapeCount, targets.Length);
 			if (targets.Length < shapeCount)
 			{
 				Target[] newTars = new Target[shapeCount];
@@ -44,14 +46,18 @@ namespace UFaceAnim
 				}
 			}
 
-			//...
+			// Reset all blend shape weights in renderer:
+			for(int i = 0; i < rend.sharedMesh.blendShapeCount; ++i)
+			{
+				rend.SetBlendShapeWeight(i, 0.0f);
+			}
 		}
 
 		public void update(ref FABlendState blendState)
 		{
 			if (targets == null) return;
 
-			for(int i = 0; i < targets.Length; ++i)
+			for(int i = 0; i < blendShapeCount; ++i)
 			{
 				Target target = targets[i];
 				if(target.target != FABlendTarget.None)
@@ -63,6 +69,7 @@ namespace UFaceAnim
 
 		private void updateState(ref FABlendState blendState, int index, Target target)
 		{
+			// Retrieve the appropriate weighting value for the given target:
 			float value = 0.0f;
 			switch (target.target)
 			{
@@ -81,14 +88,14 @@ namespace UFaceAnim
 				case FABlendTarget.MouthCornerR:
 					value = blendState.mouthCornerR;
 					break;
-				case FABlendTarget.BrowsInOut:
-					value = blendState.browsInOut;
-					break;
 				case FABlendTarget.BrowsL:
 					value = blendState.browsL;
 					break;
 				case FABlendTarget.BrowsR:
 					value = blendState.browsR;
+					break;
+				case FABlendTarget.BrowsInOut:
+					value = blendState.browsInOut;
 					break;
 				case FABlendTarget.BrowsSharpFlat:
 					value = blendState.browsSharpFlat;
@@ -102,13 +109,21 @@ namespace UFaceAnim
 				case FABlendTarget.EyesWander:
 					value = blendState.eyesWander;
 					break;
+				case FABlendTarget.EyesDirX:
+					value = blendState.eyesDir.x;
+					break;
+				case FABlendTarget.EyesDirY:
+					value = blendState.eyesDir.y;
+					break;
 				default:
 					break;
 			}
 
+			// Process blend weight:
 			if (target.negativeRange) value *= -1;
-			float weight = 100 * value;
+			float weight = 100 * Mathf.Clamp01(value);
 
+			// Write blend shape weight to skinned mesh renderer:
 			rend.SetBlendShapeWeight(index, weight);
 		}
 

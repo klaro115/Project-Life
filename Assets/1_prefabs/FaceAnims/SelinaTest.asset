@@ -17,12 +17,12 @@ MonoBehaviour:
       mouthOpenClose: 0
       mouthShowTeeth: 0
       mouthInOut: 0
-      mouthCornerL: 0
-      mouthCornerR: 0
+      mouthCornerL: 1
+      mouthCornerR: 1
+      browsL: 0.57
+      browsR: 0.57
       browsInOut: 0
-      browsL: 0
-      browsR: 0
-      browsSharpFlat: 0
+      browsSharpFlat: -0.29
       eyesCloseL: 0
       eyesCloseR: 0
       eyesWander: 0.02
@@ -31,99 +31,99 @@ MonoBehaviour:
       mouthOpenClose: 0
       mouthShowTeeth: 0
       mouthInOut: 0
-      mouthCornerL: 0
-      mouthCornerR: 0
-      browsInOut: 0
-      browsL: 0
-      browsR: 0
-      browsSharpFlat: 0
+      mouthCornerL: -1
+      mouthCornerR: -1
+      browsL: -1
+      browsR: -1
+      browsInOut: 1
+      browsSharpFlat: -0.65
       eyesCloseL: 0
       eyesCloseR: 0
-      eyesWander: 0.02
+      eyesWander: 0
       eyesDir: {x: 0, y: 0}
     blendStateAnger:
       mouthOpenClose: 0
-      mouthShowTeeth: 0
+      mouthShowTeeth: 0.19
       mouthInOut: 0
-      mouthCornerL: 0
-      mouthCornerR: 0
-      browsInOut: 0
-      browsL: 0
-      browsR: 0
-      browsSharpFlat: 0
+      mouthCornerL: -1
+      mouthCornerR: -0.62
+      browsL: -0.29
+      browsR: -0.34
+      browsInOut: 1
+      browsSharpFlat: 1
       eyesCloseL: 0
       eyesCloseR: 0
-      eyesWander: 0.02
+      eyesWander: 0.04
       eyesDir: {x: 0, y: 0}
     blendStateFear:
       mouthOpenClose: 0
-      mouthShowTeeth: 0
-      mouthInOut: 0
-      mouthCornerL: 0
-      mouthCornerR: 0
-      browsInOut: 0
-      browsL: 0
-      browsR: 0
-      browsSharpFlat: 0
+      mouthShowTeeth: 0.36
+      mouthInOut: 0.31
+      mouthCornerL: -0.45
+      mouthCornerR: -0.59
+      browsL: -1
+      browsR: -1
+      browsInOut: 1
+      browsSharpFlat: -1
       eyesCloseL: 0
       eyesCloseR: 0
-      eyesWander: 0.02
+      eyesWander: 0
       eyesDir: {x: 0, y: 0}
     blendStateTrust:
       mouthOpenClose: 0
       mouthShowTeeth: 0
-      mouthInOut: 0
-      mouthCornerL: 0
-      mouthCornerR: 0
+      mouthInOut: 0.29
+      mouthCornerL: 0.57
+      mouthCornerR: 0.54
+      browsL: 1
+      browsR: 1
       browsInOut: 0
-      browsL: 0
-      browsR: 0
-      browsSharpFlat: 0
+      browsSharpFlat: -0.06
       eyesCloseL: 0
       eyesCloseR: 0
-      eyesWander: 0.02
+      eyesWander: 0
       eyesDir: {x: 0, y: 0}
     blendStateDisgust:
       mouthOpenClose: 0
       mouthShowTeeth: 0
-      mouthInOut: 0
-      mouthCornerL: 0
-      mouthCornerR: 0
-      browsInOut: 0
-      browsL: 0
-      browsR: 0
-      browsSharpFlat: 0
+      mouthInOut: 0.82
+      mouthCornerL: -0.57
+      mouthCornerR: -0.95
+      browsL: 0.08
+      browsR: 0.39
+      browsInOut: 1
+      browsSharpFlat: 1
       eyesCloseL: 0
       eyesCloseR: 0
-      eyesWander: 0.02
+      eyesWander: 0
       eyesDir: {x: 0, y: 0}
     blendStateSurprise:
-      mouthOpenClose: 0
-      mouthShowTeeth: 0
+      mouthOpenClose: 0.19
+      mouthShowTeeth: 0.06
       mouthInOut: 0
-      mouthCornerL: 0
-      mouthCornerR: 0
+      mouthCornerL: 0.24
+      mouthCornerR: 0.3
+      browsL: 1
+      browsR: 1
       browsInOut: 0
-      browsL: 0
-      browsR: 0
-      browsSharpFlat: 0
+      browsSharpFlat: -1
       eyesCloseL: 0
       eyesCloseR: 0
-      eyesWander: 0.02
+      eyesWander: 0.08
       eyesDir: {x: 0, y: 0}
     blendStateAnticipation:
-      mouthOpenClose: 0
+      mouthOpenClose: 0.09
       mouthShowTeeth: 0
-      mouthInOut: 0
-      mouthCornerL: 0
-      mouthCornerR: 0
+      mouthInOut: 0.33
+      mouthCornerL: 0.19
+      mouthCornerR: 0.78
+      browsL: 1
+      browsR: 0.25
       browsInOut: 0
-      browsL: 0
-      browsR: 0
-      browsSharpFlat: 0
+      browsSharpFlat: 1
       eyesCloseL: 0
       eyesCloseR: 0
-      eyesWander: 0.02
+      eyesWander: 0.03
       eyesDir: {x: 0, y: 0}
     blendStateNeutral:
       mouthOpenClose: 0
@@ -131,9 +131,165 @@ MonoBehaviour:
       mouthInOut: 0
       mouthCornerL: 0
       mouthCornerR: 0
-      browsInOut: 0
       browsL: 0
       browsR: 0
+      browsInOut: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0
+      eyesDir: {x: 0, y: 0}
+  blendShapesSpeech:
+    blendCurve: 0
+    blendStateGroup0:
+      mouthOpenClose: 1
+      mouthShowTeeth: 0.26
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsL: 0
+      browsR: 0
+      browsInOut: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateGroup1:
+      mouthOpenClose: 0.72
+      mouthShowTeeth: 0.85
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsL: 0
+      browsR: 0
+      browsInOut: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateGroup2:
+      mouthOpenClose: 0.75
+      mouthShowTeeth: 0
+      mouthInOut: 1
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsL: 0.27
+      browsR: 0.24
+      browsInOut: 0.19
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateGroup3:
+      mouthOpenClose: 0.69
+      mouthShowTeeth: 1
+      mouthInOut: 1
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsL: -0.27
+      browsR: -0.25
+      browsInOut: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateGroup4:
+      mouthOpenClose: 0.22
+      mouthShowTeeth: 1
+      mouthInOut: 0.38
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsL: 0
+      browsR: 0
+      browsInOut: 0.26
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateGroup5:
+      mouthOpenClose: 0
+      mouthShowTeeth: 1
+      mouthInOut: 0.48
+      mouthCornerL: -0.16
+      mouthCornerR: -0.19
+      browsL: 0
+      browsR: 0
+      browsInOut: 0
+      browsSharpFlat: 0.15
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateGroup6:
+      mouthOpenClose: 0.66
+      mouthShowTeeth: 1
+      mouthInOut: 1
+      mouthCornerL: 0.22
+      mouthCornerR: 0.16
+      browsL: 0
+      browsR: 0
+      browsInOut: 0
+      browsSharpFlat: -0.28
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateGroup7:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0.08
+      mouthInOut: 0.41
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsL: 0
+      browsR: 0
+      browsInOut: 0
+      browsSharpFlat: 0.27
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateGroup8:
+      mouthOpenClose: 0.7
+      mouthShowTeeth: 0
+      mouthInOut: 1
+      mouthCornerL: -0.44
+      mouthCornerR: -0.44
+      browsL: -0.24
+      browsR: -0.13
+      browsInOut: 0
+      browsSharpFlat: -0.28
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateGroup9:
+      mouthOpenClose: 0.09
+      mouthShowTeeth: 0.78
+      mouthInOut: 0.1
+      mouthCornerL: 0.24
+      mouthCornerR: 0.29
+      browsL: 0
+      browsR: 0
+      browsInOut: 0
+      browsSharpFlat: 0
+      eyesCloseL: 0
+      eyesCloseR: 0
+      eyesWander: 0.02
+      eyesDir: {x: 0, y: 0}
+    blendStateSilence:
+      mouthOpenClose: 0
+      mouthShowTeeth: 0
+      mouthInOut: 0
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsL: 0
+      browsR: 0
+      browsInOut: 0
       browsSharpFlat: 0
       eyesCloseL: 0
       eyesCloseR: 0

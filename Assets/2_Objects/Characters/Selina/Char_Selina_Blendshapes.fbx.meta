@@ -43,6 +43,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: Char_Selina_Skin
     second: {fileID: 2100000, guid: 754ee7b208196fa45a57bd0454b99b09, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Char_Selina_Teeth
+    second: {fileID: 2100000, guid: b6ecca5d310ed4d44864cbfb1b3f0f66, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
