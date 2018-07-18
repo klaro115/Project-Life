@@ -10,13 +10,20 @@ namespace UFaceAnim
 
 		private bool initialized = false;
 
+		public float phonemeBlendRate = 5.0f;
+		public float phonemeEnergyRate = 18.0f;
+
 		[SerializeField]
 		private FAPresets preset = null;
 		private FARenderer[] renderers = null;
 
 		private FABasePhonemes targetPhoneme = FABasePhonemes.None;
+		private float targetPhonemeEnergy = 0.0f;
+		private float currentPhonemeEnergy = 0.0f;
+
 		//private FAEmotion currentEmotion = FAEmotion.Neutral;
 
+		private FABlendState currentBlendSpeech = FABlendState.Default;
 		private FABlendState currentBlendState = FABlendState.Default;
 
 		#endregion
@@ -33,7 +40,16 @@ namespace UFaceAnim
 				renderers[i].initialize();
 			}
 
+			targetPhonemeEnergy = 0;
+			currentPhonemeEnergy = 0;
+
 			//...
+		}
+
+		public void setPhoneme(FABasePhonemes phoneme, float energy)
+		{
+			targetPhoneme = phoneme;
+			targetPhonemeEnergy = energy;
 		}
 
 		private float getBlendFactor(float k, FABlendCurve blendCurve)
@@ -52,7 +68,7 @@ namespace UFaceAnim
 		}
 
 		[ContextMenu("Update")]
-		public void update()
+		public void update(float deltaTime)
 		{
 			// Make sure the controller and all members are always initialized:
 			if(!initialized)
@@ -97,47 +113,50 @@ namespace UFaceAnim
 
 				FABlendCurve blendCurve = preset.blendShapesSpeech.blendCurve;
 
-				float kEnergy = getBlendFactor(1.0f, blendCurve);
+				currentPhonemeEnergy = Mathf.Lerp(currentPhonemeEnergy, targetPhonemeEnergy, phonemeEnergyRate * deltaTime);
+				float energy = Mathf.Clamp01(currentPhonemeEnergy);
+				float kEnergy = getBlendFactor(energy, blendCurve);
 
 				// Create blend state by interpolating towards a preset states using the current phoneme:
 				FABlendState bsSpeech = FABlendState.Default;
 				switch (targetPhoneme)
 				{
 					case FABasePhonemes.Group0_AI:
-						newPhonState = preset.blendShapesSpeech.blendStateGroup0;
+						bsSpeech = preset.blendShapesSpeech.blendStateGroup0;
 						break;
 					case FABasePhonemes.Group1_E:
-						newPhonState = preset.blendShapesSpeech.blendStateGroup1;
+						bsSpeech = preset.blendShapesSpeech.blendStateGroup1;
 						break;
 					case FABasePhonemes.Group2_U:
-						newPhonState = preset.blendShapesSpeech.blendStateGroup2;
+						bsSpeech = preset.blendShapesSpeech.blendStateGroup2;
 						break;
 					case FABasePhonemes.Group3_O:
-						newPhonState = preset.blendShapesSpeech.blendStateGroup3;
+						bsSpeech = preset.blendShapesSpeech.blendStateGroup3;
 						break;
 					case FABasePhonemes.Group4_CDGK:
-						newPhonState = preset.blendShapesSpeech.blendStateGroup4;
+						bsSpeech = preset.blendShapesSpeech.blendStateGroup4;
 						break;
 					case FABasePhonemes.Group5_FV:
-						newPhonState = preset.blendShapesSpeech.blendStateGroup5;
+						bsSpeech = preset.blendShapesSpeech.blendStateGroup5;
 						break;
 					case FABasePhonemes.Group6_LTh:
-						newPhonState = preset.blendShapesSpeech.blendStateGroup6;
+						bsSpeech = preset.blendShapesSpeech.blendStateGroup6;
 						break;
 					case FABasePhonemes.Group7_MBP:
-						newPhonState = preset.blendShapesSpeech.blendStateGroup7;
+						bsSpeech = preset.blendShapesSpeech.blendStateGroup7;
 						break;
 					case FABasePhonemes.Group8_WQ:
-						newPhonState = preset.blendShapesSpeech.blendStateGroup8;
+						bsSpeech = preset.blendShapesSpeech.blendStateGroup8;
 						break;
 					case FABasePhonemes.Group9_Rest:
-						newPhonState = preset.blendShapesSpeech.blendStateSilence;
+						bsSpeech = preset.blendShapesSpeech.blendStateSilence;
 						break;
 					default:
 						break;
 				}
 
-				newPhonState = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref bsSpeech, kEnergy);
+				currentBlendSpeech = FABlendState.lerp(ref currentBlendSpeech, ref bsSpeech, phonemeBlendRate * deltaTime);
+				newPhonState = FABlendState.lerp(ref preset.blendShapesSpeech.blendStateSilence, ref bsSpeech, kEnergy);
 			}
 
 			// Set the new state and update renderers:

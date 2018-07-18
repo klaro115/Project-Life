@@ -140,7 +140,6 @@ namespace UFaceAnim.Editor
 
 			if(!phonemeMode)
 			{
-				Debug.Log("TEST: Loading state: " + targetEmotion.ToString());
 				// Load target state blend weights from asset:
 				switch (targetEmotion)
 				{
@@ -175,7 +174,6 @@ namespace UFaceAnim.Editor
 			}
 			else
 			{
-				Debug.Log("TEST: Loading state: " + targetPhoneme.ToString());
 				// Load target state blend weights from asset:
 				switch (targetPhoneme)
 				{
