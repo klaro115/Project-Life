@@ -2176,12 +2176,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   signalOrigin: 0
-  sampleCount: 512
+  sampleCount: 256
   sampleRate: 44100
-  maxFrequencyRange: 0.2
-  frameCount: 1
+  frameCount: 8
   silenceRange: 0.05
-  vowelBandThreshold: 0.001
+  vowelFrequencyRange: 4000
+  vowelBandThreshold: 0
   vowelBandWidth: 750
 --- !u!114 &114304490491573924
 MonoBehaviour:
@@ -2197,6 +2197,7 @@ MonoBehaviour:
   targets:
   - target: 1
     negativeRange: 0
+    modifier: 0.2
 --- !u!114 &114462058038055854
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2211,32 +2212,46 @@ MonoBehaviour:
   targets:
   - target: 1
     negativeRange: 0
+    modifier: 0
   - target: 2
     negativeRange: 0
+    modifier: 0
   - target: 3
     negativeRange: 0
+    modifier: 0
   - target: 4
     negativeRange: 0
+    modifier: 0
   - target: 5
     negativeRange: 0
+    modifier: 0
   - target: 4
     negativeRange: 1
+    modifier: 0
   - target: 5
     negativeRange: 1
+    modifier: 0
   - target: 6
     negativeRange: 0
+    modifier: 0
   - target: 7
     negativeRange: 0
+    modifier: 0
   - target: 6
     negativeRange: 1
+    modifier: 0
   - target: 7
     negativeRange: 1
+    modifier: 0
   - target: 8
     negativeRange: 0
+    modifier: 0
   - target: 9
     negativeRange: 0
+    modifier: 0
   - target: 9
     negativeRange: 1
+    modifier: 0
 --- !u!114 &114736869000163238
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2251,12 +2266,16 @@ MonoBehaviour:
   targets:
   - target: 13
     negativeRange: 1
+    modifier: 0
   - target: 13
     negativeRange: 0
+    modifier: 0
   - target: 14
     negativeRange: 0
+    modifier: 0
   - target: 14
     negativeRange: 1
+    modifier: 0
 --- !u!114 &114927865454494930
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2268,8 +2287,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e68cf2998212ec4783725fb8bdbe86a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speechMode: 1
   phonemeBlendRate: 18
-  phonemeEnergyRate: 18
+  phonemeEnergyRate: 36
   preset: {fileID: 11400000, guid: 9b9cdf2597145a54e9d5b77eb6501d58, type: 2}
 --- !u!137 &137009657699178026
 SkinnedMeshRenderer:

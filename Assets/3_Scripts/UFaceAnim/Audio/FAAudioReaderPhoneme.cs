@@ -17,13 +17,17 @@ namespace UFaceAnim.Audio
 		public float vowelBandThreshold = 0.1f;		// [%]
 		public float vowelBandWidth = 750.0f;		// [Hz]
 		private int vowelBandCount = 1;
+		public float plosiveBandWidth = 300.0f;
+		private int plosiveBandCount = 1;
 
 		private float[,] bands = null;
 		private float[] vowelBandMatrix = null;
+		private float[] plosiveBandMatrix = null;
 
 		private float minEnergy = 0.1f;
 		private float maxEnergy = 0.0f;
 
+		private FABasePhonemes prevPhoneme = FABasePhonemes.None;
 		private FABasePhonemes phoneme = FABasePhonemes.None;
 
 		private float[] vowelF1 = new float[5]
@@ -42,11 +46,33 @@ namespace UFaceAnim.Audio
 			450,	// o
 			700,	// a, ae
 		};
+		private float[] plosiveF1 = new float[5]	// >>> TODO: Extract frequency ranges from paper! <<<
+{
+			0,		// i
+			0,		// u
+			200,	// e, é
+			0,		// o
+			550,    // a, ae
+};
+		private float[] plosiveF2 = new float[5]
+		{
+			1950,	// i
+			600,	// u
+			1600,	// e, é
+			450,	// o
+			700,	// a, ae
+		};
 		// NOTE: The above bands F1 and F2 have been set with an approximate vocal range 4000 Hz, they are adjusted on start.
+
+		private static readonly FABasePhonemes[] phonemeCheckOrder = new FABasePhonemes[10]
+		{
+			FABasePhonemes.Group0_AI, FABasePhonemes.Group2_U, FABasePhonemes.Group1_E, FABasePhonemes.Group3_O, FABasePhonemes.Group0_AI,
+			FABasePhonemes.Group4_CDGK, FABasePhonemes.Group5_FV, FABasePhonemes.Group6_LTh, FABasePhonemes.Group7_MBP, FABasePhonemes.Group8_WQ
+		};
 
 		#endregion
 		#region Properties
-		
+
 		public FABasePhonemes Phoneme
 		{
 			get { return phoneme; }
@@ -94,25 +120,29 @@ namespace UFaceAnim.Audio
 					bands[f, b] = 0.0f;
 			}
 
-			// Prepare vowel detection bands and matrices:
+			// Prepare vowel and plosive detection bands and matrices:
+			initializePhonemeBands(ref vowelBandCount, vowelBandWidth, ref vowelBandMatrix, ref vowelBandThreshold, vowelF1, vowelF2);
+			initializePhonemeBands(ref plosiveBandCount, plosiveBandWidth, ref plosiveBandMatrix, ref vowelBandThreshold, plosiveF1, plosiveF2);
+		}
+
+		private void initializePhonemeBands(ref int bandCount, float bandWidth, ref float[] bandMatrix, ref float bandThreshold, float[] f1, float[] f2)
+		{
+			bandCount = Mathf.CeilToInt(getFFTBandFromFrequency(bandWidth));
+			bandMatrix = new float[bandCount];
+
+			float halfBandWidth = bandCount * 0.5f;
+			for (int i = 0; i < bandMatrix.Length; ++i)
 			{
-				vowelBandCount = Mathf.CeilToInt(getFFTBandFromFrequency(vowelBandWidth));
-				vowelBandMatrix = new float[vowelBandCount];
+				bandMatrix[i] = i < halfBandWidth ? i / halfBandWidth : 1 - (i - halfBandWidth) / halfBandWidth;
+			}
 
-				float halfBandWidth = vowelBandCount * 0.5f;
-				for (int i = 0; i < vowelBandMatrix.Length; ++i)
-				{
-					vowelBandMatrix[i] = i < halfBandWidth ? i / halfBandWidth : 1 - (i - halfBandWidth) / halfBandWidth;
-				}
+			bandThreshold /= frameCount;
 
-				vowelBandThreshold /= frameCount;
-
-				float f1f2Modifier = vowelFrequencyRange / 4000.0f;
-				for(int i = 0; i < vowelF1.Length; ++i)
-				{
-					vowelF1[i] *= f1f2Modifier;
-					vowelF2[i] *= f1f2Modifier;
-				}
+			float f1f2Modifier = vowelFrequencyRange / 4000.0f;
+			for (int i = 0; i < f1.Length; ++i)
+			{
+				f1[i] *= f1f2Modifier;
+				f2[i] *= f1f2Modifier;
 			}
 		}
 
@@ -143,6 +173,8 @@ namespace UFaceAnim.Audio
 			minEnergy = Mathf.Min(minEnergy, energy);
 			float silenceLevel = Mathf.Lerp(minEnergy, maxEnergy, silenceRange);
 
+			prevPhoneme = phoneme;
+
 			// Only do further analysis if a minimum energy/loudness threshold was surpassed:
 			if (energy > silenceLevel)
 			{
@@ -165,7 +197,7 @@ namespace UFaceAnim.Audio
 					samples[i] = band;
 				}
 
-				findPhonemes(maxBand);
+				findPhonemes();
 			}
 			else
 			{
@@ -173,38 +205,32 @@ namespace UFaceAnim.Audio
 			}
 		}
 
-		private void findPhonemes(int bufferSize)
+		private void findPhonemes()
 		{
-			float vi = findVowel(vowelF1[0], vowelF2[0]);
-			float vu = findVowel(vowelF1[1], vowelF2[1]);
-			float ve = findVowel(vowelF1[2], vowelF2[2]);
-			float vo = findVowel(vowelF1[3], vowelF2[3]);
-			float va = findVowel(vowelF1[4], vowelF2[4]);
+			float maxWeight = 0.0f;
+			FABasePhonemes maxWeightPhoneme = FABasePhonemes.None;
 
-			phoneme = FABasePhonemes.Group9_Rest;
-			float vMax = 0.0001f;
-			if(vi > vMax || va > vMax)
+			// Check vowels first, using their respective F bands:
+			for(int i = 0; i < 5; ++i)
 			{
-				vMax = Mathf.Max(vi, va);
-				phoneme = FABasePhonemes.Group0_AI;
+				float weight = findVowel(vowelF1[i], vowelF2[i]);
+				if(weight > maxWeight)
+				{
+					maxWeight = weight;
+					maxWeightPhoneme = phonemeCheckOrder[i];
+				}
 			}
-			if (vu > vMax)
+
+			// Check plosives next, as they are recognizable by the preceeding silence:
+			if(prevPhoneme == FABasePhonemes.None)
 			{
-				vMax = vu;
-				phoneme = FABasePhonemes.Group2_U;
+				// >>> TODO: actually check the bands for each of the plosives just like we did with the vowels! <<<
 			}
-			if (ve > vMax)
-			{
-				vMax = ve;
-				phoneme = FABasePhonemes.Group1_E;
-			}
-			if (vo > vMax)
-			{
-				vMax = vo;
-				phoneme = FABasePhonemes.Group3_O;
-			}
+
 
 			// TODO: Check for each fricative, plosive and nasal sound one after the other as well.
+
+			phoneme = maxWeightPhoneme;
 		}
 
 		private float findVowel(float f1, float f2)
@@ -212,8 +238,8 @@ namespace UFaceAnim.Audio
 			int bandF1 = getFFTBandFromFrequency(f1);
 			int bandF2 = getFFTBandFromFrequency(f2);
 
-			float resultF1 = findFBand(bandF1, vowelBandCount);
-			float resultF2 = findFBand(bandF2, vowelBandCount);
+			float resultF1 = findBand(bandF1, vowelBandCount);
+			float resultF2 = findBand(bandF2, vowelBandCount);
 
 			if (resultF1 < vowelBandThreshold) resultF1 = 0;
 			if (resultF2 < vowelBandThreshold) resultF2 = 0;
@@ -221,15 +247,38 @@ namespace UFaceAnim.Audio
 			return Mathf.Min(resultF1, resultF2);
 		}
 
-		private float findFBand(int bandIndex, int fBandWidth)
+		private float findPlosive(float f1, float f2)
+		{
+			int bandF1 = getFFTBandFromFrequency(f1);
+			int bandF2 = getFFTBandFromFrequency(f2);
+
+			float resultF1 = findBand(bandF1, plosiveBandCount);
+			float resultF2 = findBand(bandF2, plosiveBandCount);
+
+			if (resultF1 < vowelBandThreshold) resultF1 = 0;
+			if (resultF2 < vowelBandThreshold) resultF2 = 0;
+
+			return Mathf.Min(resultF1, resultF2);
+		}
+
+		private float findBand(int bandIndex, int fBandWidth)
 		{
 			// NOTE: This checks if there is a clearly defined frequency band in a specific frequency range: (useful for detecting vowels)
 
+			// Measure band values relative to a 'baseline' formed by the lowest and highest band values within the range:
+			float invBandWidth = 1.0f / fBandWidth;
+			float valueLow = samples[bandIndex];
+			float valueHigh = samples[bandIndex + fBandWidth - 1];
+
 			// Calculate correlation between the band values and the matrix:
 			float sum = 0.0f;
-			for(int i = bandIndex; i < fBandWidth; ++i)
+			for(int i = 0; i < fBandWidth; ++i)
 			{
-				sum += samples[i] * vowelBandMatrix[i];
+				int j = bandIndex + i;
+
+				float baseLine = Mathf.Lerp(valueLow, valueHigh, i * invBandWidth);
+				float offset = samples[j] - baseLine;
+				sum += offset * vowelBandMatrix[i];
 			}
 
 			return sum / fBandWidth;

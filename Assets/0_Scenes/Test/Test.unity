@@ -497,36 +497,6 @@ Prefab:
       propertyPath: m_RootOrder
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 114007394418639464, guid: dd7aec478289c7541a4be41a6e062d5d,
-        type: 2}
-      propertyPath: frameCount
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 114007394418639464, guid: dd7aec478289c7541a4be41a6e062d5d,
-        type: 2}
-      propertyPath: vowelFrequencyRange
-      value: 4000
-      objectReference: {fileID: 0}
-    - target: {fileID: 114007394418639464, guid: dd7aec478289c7541a4be41a6e062d5d,
-        type: 2}
-      propertyPath: sampleRate
-      value: 44100
-      objectReference: {fileID: 0}
-    - target: {fileID: 114007394418639464, guid: dd7aec478289c7541a4be41a6e062d5d,
-        type: 2}
-      propertyPath: vowelBandThreshold
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114007394418639464, guid: dd7aec478289c7541a4be41a6e062d5d,
-        type: 2}
-      propertyPath: sampleCount
-      value: 256
-      objectReference: {fileID: 0}
-    - target: {fileID: 114007394418639464, guid: dd7aec478289c7541a4be41a6e062d5d,
-        type: 2}
-      propertyPath: maxFrequencyRange
-      value: 0.3
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: dd7aec478289c7541a4be41a6e062d5d, type: 2}
   m_IsPrefabParent: 0
@@ -709,6 +679,7 @@ MonoBehaviour:
   vowelFrequencyRange: 4000
   vowelBandThreshold: 0.1
   vowelBandWidth: 750
+  plosiveBandWidth: 300
 --- !u!1 &1540385080
 GameObject:
   m_ObjectHideFlags: 0

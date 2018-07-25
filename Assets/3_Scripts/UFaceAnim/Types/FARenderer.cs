@@ -14,8 +14,9 @@ namespace UFaceAnim
 		{
 			public FABlendTarget target;
 			public bool negativeRange;
+			public float modifier;
 
-			public static Target None { get { return new Target() { target = FABlendTarget.None, negativeRange = false }; } }
+			public static Target None { get { return new Target() { target = FABlendTarget.None, negativeRange = false, modifier = 0.0f }; } }
 		}
 
 		#endregion
@@ -120,6 +121,7 @@ namespace UFaceAnim
 			}
 
 			// Process blend weight:
+			value *= 1.0f + target.modifier;
 			if (target.negativeRange) value *= -1;
 			float weight = 100 * Mathf.Clamp01(value);
 

@@ -6,12 +6,22 @@ namespace UFaceAnim
 	[AddComponentMenu("Scripts/UFaceAnim/Controller")]
 	public class FAController : MonoBehaviour
 	{
+		#region Types
+
+		public enum SpeechMode
+		{
+			Energy,
+			Phonemes,
+		}
+
+		#endregion
 		#region Fields
 
 		private bool initialized = false;
 
-		public float phonemeBlendRate = 5.0f;
-		public float phonemeEnergyRate = 18.0f;
+		public SpeechMode speechMode = SpeechMode.Phonemes;
+		public float phonemeBlendRate = 18.0f;
+		public float phonemeEnergyRate = 36.0f;
 
 		[SerializeField]
 		private FAPresets preset = null;
@@ -77,87 +87,10 @@ namespace UFaceAnim
 			}
 
 			// Emotion based weighting:
-			FABlendState newEmotState;
-			{
-				// TODO: Implement emotion structure and read clamped/normalized values from there.
-
-				//...
-
-				FABlendCurve blendCurve = preset.blendShapeSetup.blendCurve;
-
-				float kJoySad = getBlendFactor(0.0f, blendCurve);
-				float kDisTru = getBlendFactor(0.0f, blendCurve);
-				float kFeaAng = getBlendFactor(0.0f, blendCurve);
-				float kSurAnt = getBlendFactor(0.0f, blendCurve);
-
-				float kTotal = getBlendFactor(0.0f, blendCurve);
-
-				// Create 'currentState' by interpolating between preset states using the current emotion:
-				FABlendState bsJoySad = FABlendState.lerp(ref preset.blendShapeSetup.blendStateSadness, ref preset.blendShapeSetup.blendStateJoy, kJoySad);
-				FABlendState bsDisTru = FABlendState.lerp(ref preset.blendShapeSetup.blendStateDisgust, ref preset.blendShapeSetup.blendStateTrust, kDisTru);
-				FABlendState bsFeaAng = FABlendState.lerp(ref preset.blendShapeSetup.blendStateFear, ref preset.blendShapeSetup.blendStateAnger, kFeaAng);
-				FABlendState bsSurAnt = FABlendState.lerp(ref preset.blendShapeSetup.blendStateSurprise, ref preset.blendShapeSetup.blendStateAnticipation, kSurAnt);
-
-				FABlendState bsTotal = bsJoySad + bsDisTru + bsFeaAng + bsSurAnt;
-				bsTotal.scale(0.25f);
-
-				newEmotState = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref bsTotal, kTotal);
-			}
+			FABlendState newEmotState = updateBlendStatesEmotion();
 
 			// Speech based weighting:
-			FABlendState newPhonState;
-			{
-				// TODO: Implement interpolation between the current and target phoneme states. [later]
-
-				//...
-
-				FABlendCurve blendCurve = preset.blendShapesSpeech.blendCurve;
-
-				currentPhonemeEnergy = Mathf.Lerp(currentPhonemeEnergy, targetPhonemeEnergy, phonemeEnergyRate * deltaTime);
-				float energy = Mathf.Clamp01(currentPhonemeEnergy);
-				float kEnergy = getBlendFactor(energy, blendCurve);
-
-				// Create blend state by interpolating towards a preset states using the current phoneme:
-				FABlendState bsSpeech = FABlendState.Default;
-				switch (targetPhoneme)
-				{
-					case FABasePhonemes.Group0_AI:
-						bsSpeech = preset.blendShapesSpeech.blendStateGroup0;
-						break;
-					case FABasePhonemes.Group1_E:
-						bsSpeech = preset.blendShapesSpeech.blendStateGroup1;
-						break;
-					case FABasePhonemes.Group2_U:
-						bsSpeech = preset.blendShapesSpeech.blendStateGroup2;
-						break;
-					case FABasePhonemes.Group3_O:
-						bsSpeech = preset.blendShapesSpeech.blendStateGroup3;
-						break;
-					case FABasePhonemes.Group4_CDGK:
-						bsSpeech = preset.blendShapesSpeech.blendStateGroup4;
-						break;
-					case FABasePhonemes.Group5_FV:
-						bsSpeech = preset.blendShapesSpeech.blendStateGroup5;
-						break;
-					case FABasePhonemes.Group6_LTh:
-						bsSpeech = preset.blendShapesSpeech.blendStateGroup6;
-						break;
-					case FABasePhonemes.Group7_MBP:
-						bsSpeech = preset.blendShapesSpeech.blendStateGroup7;
-						break;
-					case FABasePhonemes.Group8_WQ:
-						bsSpeech = preset.blendShapesSpeech.blendStateGroup8;
-						break;
-					case FABasePhonemes.Group9_Rest:
-						bsSpeech = preset.blendShapesSpeech.blendStateSilence;
-						break;
-					default:
-						break;
-				}
-
-				currentBlendSpeech = FABlendState.lerp(ref currentBlendSpeech, ref bsSpeech, phonemeBlendRate * deltaTime);
-				newPhonState = FABlendState.lerp(ref preset.blendShapesSpeech.blendStateSilence, ref bsSpeech, kEnergy);
-			}
+			FABlendState newPhonState = updateBlendStatesSpeech(deltaTime);
 
 			// Set the new state and update renderers:
 			FABlendState newBlendState = newEmotState + newPhonState;
@@ -177,6 +110,93 @@ namespace UFaceAnim
 
 			// Send resulting blend states to renderers:
 			updateRenderers();
+		}
+
+		private FABlendState updateBlendStatesEmotion()
+		{
+			// TODO: Implement emotion structure and read clamped/normalized values from there.
+
+			//...
+
+			FABlendCurve blendCurve = preset.blendShapeSetup.blendCurve;
+
+			float kJoySad = getBlendFactor(0.0f, blendCurve);
+			float kDisTru = getBlendFactor(0.0f, blendCurve);
+			float kFeaAng = getBlendFactor(0.0f, blendCurve);
+			float kSurAnt = getBlendFactor(0.0f, blendCurve);
+
+			float kTotal = getBlendFactor(0.0f, blendCurve);
+
+			// Create 'currentState' by interpolating between preset states using the current emotion:
+			FABlendState bsJoySad = FABlendState.lerp(ref preset.blendShapeSetup.blendStateSadness, ref preset.blendShapeSetup.blendStateJoy, kJoySad);
+			FABlendState bsDisTru = FABlendState.lerp(ref preset.blendShapeSetup.blendStateDisgust, ref preset.blendShapeSetup.blendStateTrust, kDisTru);
+			FABlendState bsFeaAng = FABlendState.lerp(ref preset.blendShapeSetup.blendStateFear, ref preset.blendShapeSetup.blendStateAnger, kFeaAng);
+			FABlendState bsSurAnt = FABlendState.lerp(ref preset.blendShapeSetup.blendStateSurprise, ref preset.blendShapeSetup.blendStateAnticipation, kSurAnt);
+
+			FABlendState bsTotal = bsJoySad + bsDisTru + bsFeaAng + bsSurAnt;
+			bsTotal.scale(0.25f);
+
+			return FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref bsTotal, kTotal);
+		}
+
+		private FABlendState updateBlendStatesSpeech(float deltaTime)
+		{
+			FABlendCurve blendCurve = preset.blendShapesSpeech.blendCurve;
+
+			currentPhonemeEnergy = Mathf.Lerp(currentPhonemeEnergy, targetPhonemeEnergy, phonemeEnergyRate * deltaTime);
+			float energy = Mathf.Clamp01(currentPhonemeEnergy);
+			float kEnergy = getBlendFactor(energy, blendCurve);
+
+			FABlendState bsSpeech = FABlendState.Default;
+
+			// Depending on settings, use the much cheaper energy based blend mode instead:
+			if (speechMode == SpeechMode.Energy)
+			{
+				bsSpeech = preset.blendShapesSpeech.blendStateGroup0;
+				//bsSpeech = FABlendState.lerp(ref preset.blendShapesSpeech.blendStateSilence, ref preset.blendShapesSpeech.blendStateGroup0, kEnergy);
+				currentBlendSpeech = FABlendState.lerp(ref currentBlendSpeech, ref bsSpeech, phonemeBlendRate * deltaTime);
+				return FABlendState.lerp(ref preset.blendShapesSpeech.blendStateSilence, ref currentBlendSpeech, kEnergy);
+			}
+
+			// Create blend state by interpolating towards a preset states using the current phoneme:
+			switch (targetPhoneme)
+			{
+				case FABasePhonemes.Group0_AI:
+					bsSpeech = preset.blendShapesSpeech.blendStateGroup0;
+					break;
+				case FABasePhonemes.Group1_E:
+					bsSpeech = preset.blendShapesSpeech.blendStateGroup1;
+					break;
+				case FABasePhonemes.Group2_U:
+					bsSpeech = preset.blendShapesSpeech.blendStateGroup2;
+					break;
+				case FABasePhonemes.Group3_O:
+					bsSpeech = preset.blendShapesSpeech.blendStateGroup3;
+					break;
+				case FABasePhonemes.Group4_CDGK:
+					bsSpeech = preset.blendShapesSpeech.blendStateGroup4;
+					break;
+				case FABasePhonemes.Group5_FV:
+					bsSpeech = preset.blendShapesSpeech.blendStateGroup5;
+					break;
+				case FABasePhonemes.Group6_LTh:
+					bsSpeech = preset.blendShapesSpeech.blendStateGroup6;
+					break;
+				case FABasePhonemes.Group7_MBP:
+					bsSpeech = preset.blendShapesSpeech.blendStateGroup7;
+					break;
+				case FABasePhonemes.Group8_WQ:
+					bsSpeech = preset.blendShapesSpeech.blendStateGroup8;
+					break;
+				case FABasePhonemes.Group9_Rest:
+					bsSpeech = preset.blendShapesSpeech.blendStateSilence;
+					break;
+				default:
+					break;
+			}
+
+			currentBlendSpeech = FABlendState.lerp(ref currentBlendSpeech, ref bsSpeech, phonemeBlendRate * deltaTime);
+			return FABlendState.lerp(ref preset.blendShapesSpeech.blendStateSilence, ref currentBlendSpeech, kEnergy);
 		}
 
 		private void updateRenderers()

@@ -24,19 +24,20 @@ namespace UFaceAnim.Inspector
 			EditorGUI.indentLevel = 0;
 
 			float w = position.width;
-			float w0 = w * 0.7f;
-			float w1 = w - w0;
+			float w0 = w * 0.65f;
+			float w1 = (w - w0) * 0.5f;
 			float h = position.height;
 
 			Rect targetRect = new Rect(position.x, position.y, w0, h);
 			Rect negatiRect = new Rect(position.x + w0, position.y, 20, h);
 			Rect negatiPostRect = new Rect(position.x + w0 + 16, position.y, w1-16, h);
 
-			GUIContent negatiCont = new GUIContent("Neg", "Wether to remap this target's weights to a negative value range, ex.: [0,-1] -> [0,1]");
+			//GUIContent negatiCont = new GUIContent("N", "Wether to remap this target's weights to a negative value range, ex.: [0,-1] -> [0,1]");
 
 			EditorGUI.PropertyField(targetRect, property.FindPropertyRelative("target"), GUIContent.none);
 			EditorGUI.PropertyField(negatiRect, property.FindPropertyRelative("negativeRange"), GUIContent.none);
-			EditorGUI.LabelField(negatiPostRect, negatiCont);
+			//EditorGUI.LabelField(negatiPostRect, negatiCont);
+			EditorGUI.PropertyField(negatiPostRect, property.FindPropertyRelative("modifier"), GUIContent.none);
 
 			//...
 
