@@ -40,21 +40,21 @@ MonoBehaviour:
       eyesCloseL: 0
       eyesCloseR: 0
       eyesWander: 0
-      eyesDir: {x: 0, y: 0}
+      eyesDir: {x: 0, y: -0.1}
     blendStateAnger:
       mouthOpenClose: 0
-      mouthShowTeeth: 0.19
+      mouthShowTeeth: 0
       mouthInOut: 0
-      mouthCornerL: -1
-      mouthCornerR: -0.62
-      browsL: -0.29
-      browsR: -0.34
-      browsInOut: 1
-      browsSharpFlat: 1
+      mouthCornerL: 0
+      mouthCornerR: 0
+      browsL: 0
+      browsR: 0
+      browsInOut: 0
+      browsSharpFlat: 0
       eyesCloseL: 0
       eyesCloseR: 0
-      eyesWander: 0.04
-      eyesDir: {x: 0, y: 0}
+      eyesWander: 0
+      eyesDir: {x: 0, y: 0.56}
     blendStateFear:
       mouthOpenClose: 0
       mouthShowTeeth: 0.36
@@ -68,7 +68,7 @@ MonoBehaviour:
       eyesCloseL: 0
       eyesCloseR: 0
       eyesWander: 0
-      eyesDir: {x: 0, y: 0}
+      eyesDir: {x: 0, y: -0.23}
     blendStateTrust:
       mouthOpenClose: 0
       mouthShowTeeth: 0
@@ -82,7 +82,7 @@ MonoBehaviour:
       eyesCloseL: 0
       eyesCloseR: 0
       eyesWander: 0
-      eyesDir: {x: 0, y: 0}
+      eyesDir: {x: 0, y: 0.3}
     blendStateDisgust:
       mouthOpenClose: 0
       mouthShowTeeth: 0
@@ -96,7 +96,7 @@ MonoBehaviour:
       eyesCloseL: 0
       eyesCloseR: 0
       eyesWander: 0
-      eyesDir: {x: 0, y: 0}
+      eyesDir: {x: 0, y: -0.03}
     blendStateSurprise:
       mouthOpenClose: 0.19
       mouthShowTeeth: 0.06
@@ -112,19 +112,19 @@ MonoBehaviour:
       eyesWander: 0.08
       eyesDir: {x: 0, y: 0}
     blendStateAnticipation:
-      mouthOpenClose: 0.09
-      mouthShowTeeth: 0
+      mouthOpenClose: 0
+      mouthShowTeeth: 0.11
       mouthInOut: 0.33
-      mouthCornerL: 0.19
-      mouthCornerR: 0.78
+      mouthCornerL: 0.02
+      mouthCornerR: 0.7
       browsL: 1
       browsR: 0.25
       browsInOut: 0
-      browsSharpFlat: 1
+      browsSharpFlat: 0.2
       eyesCloseL: 0
       eyesCloseR: 0
       eyesWander: 0.03
-      eyesDir: {x: 0, y: 0}
+      eyesDir: {x: 0, y: 0.18}
     blendStateNeutral:
       mouthOpenClose: 0
       mouthShowTeeth: 0

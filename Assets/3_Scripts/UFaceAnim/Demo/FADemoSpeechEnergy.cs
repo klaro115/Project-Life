@@ -11,6 +11,7 @@ namespace UFaceAnim.Test
 		public FAAudioReader reader = null;
 		public FAController controller = null;
 
+		[Header("Test phonemes:")]
 		public bool writePhonemes = false;
 		public string phonemeOutput = null;
 		public float minPhonemeDuration = 0.03f;
@@ -19,6 +20,12 @@ namespace UFaceAnim.Test
 		private FABasePhonemes curPhoneme = FABasePhonemes.None;
 		private float phonemeStartTime = 0.0f;
 		private bool phonemePosted = false;
+
+		[Header("Test view direction:")]
+		public bool testViewDir = false;
+		private Vector3 viewEyePos = Vector3.zero;
+		private Vector3 viewTargetPos = Vector3.zero;
+		private Vector3 viewDirection = Vector3.forward;
 
 		#endregion
 		#region Methods
@@ -31,27 +38,54 @@ namespace UFaceAnim.Test
 			if (writePhonemes) phonemeOutput = "";
 		}
 
+		private void OnDrawGizmosSelected()
+		{
+			if(testViewDir)
+			{
+				Gizmos.color = Color.red;
+				Gizmos.DrawWireSphere(viewEyePos, 0.02f);
+				Gizmos.DrawWireSphere(viewTargetPos, 0.2f);
+
+				Gizmos.color = Color.green;
+				Gizmos.DrawLine(viewEyePos, viewTargetPos);
+			}
+		}
+
 		void Update()
 		{
+			// Read out current phoneme and send it to the controller:
 			prevPhoneme = curPhoneme;
 			curPhoneme = FABasePhonemes.Group0_AI;
 			if(reader is FAAudioReaderPhoneme)
 			{
 				curPhoneme = (reader as FAAudioReaderPhoneme).Phoneme;
 			}
-			if(prevPhoneme != curPhoneme)
+			controller.setPhoneme(curPhoneme, reader.Energy);
+
+			// Output phonemes as strings, if required:
+			if (prevPhoneme != curPhoneme)
 			{
 				phonemePosted = false;
 				phonemeStartTime = Time.time;
 			}
-
 			if(writePhonemes && !phonemePosted && Time.time > phonemeStartTime + minPhonemeDuration)
 			{
 				phonemePosted = true;
 				phonemeOutput += getPhonemeChar(curPhoneme);
 			}
 
-			controller.setPhoneme(curPhoneme, reader.Energy);
+			// Continuously change view direction, if required:
+			if(testViewDir)
+			{
+				float viewTargetPhase = Time.time * 0.5f;
+				viewTargetPos = controller.transform.TransformPoint(new Vector3(Mathf.Cos(viewTargetPhase) * 3, 1.6f, Mathf.Sin(viewTargetPhase) * 3 + 4));
+				viewEyePos = controller.transform.TransformPoint(Vector3.up * 1.55f);
+				viewDirection = (viewTargetPos - viewEyePos).normalized;
+
+				controller.setViewDirection(viewDirection);
+			}
+
+			// Update controller animation in realtime:
 			controller.update(Time.deltaTime);
 		}
 

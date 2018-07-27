@@ -29,7 +29,7 @@ namespace UFaceAnim.Editor
 		[MenuItem("Window/UFaceAnim/Blend State Editor")]
 		public static FABlendStateEditor showEditorWindow()
 		{
-			Rect rect = new Rect(100, 100, 300, 470);
+			Rect rect = new Rect(100, 100, 300, 508);
 			FABlendStateEditor bse = EditorWindow.GetWindowWithRect<FABlendStateEditor>(rect, true, "Blend State");
 			return bse;
 		}
@@ -41,7 +41,7 @@ namespace UFaceAnim.Editor
 			if (selectionGO != null && (controller == null || selectionGO != controller.gameObject))
 			{
 				controller = selectionGO.GetComponent<FAController>();
-				if(asset == null && controller.Preset != null)
+				if(asset == null && controller != null && controller.Preset != null)
 				{
 					asset = controller.Preset;
 				}
@@ -91,6 +91,8 @@ namespace UFaceAnim.Editor
 			currentState.eyesCloseL = EditorGUILayout.Slider("Close L", currentState.eyesCloseL, 0, 1);
 			currentState.eyesCloseR = EditorGUILayout.Slider("Close R", currentState.eyesCloseR, 0, 1);
 			currentState.eyesWander = EditorGUILayout.Slider("Wander", currentState.eyesWander, 0, 1);
+			currentState.eyesDir.x = EditorGUILayout.Slider("Look L-R", currentState.eyesDir.x, -1, 1);
+			currentState.eyesDir.y = EditorGUILayout.Slider("Look D-U", currentState.eyesDir.y, -1, 1);
 
 			// If a UI control was manipulated:
 			if(GUI.changed)
@@ -147,7 +149,7 @@ namespace UFaceAnim.Editor
 				{
 					testEmotion.Vector = testEmotVector;
 					controller.setEmotion(testEmotion);
-					controller.update(999);	// deltaTime of 100 to ensure immediate results.
+					controller.update(Application.isPlaying ? Time.deltaTime : 999);
 				}
 				GUI.changed = GUI.changed || prevEmotChanged;
 			}

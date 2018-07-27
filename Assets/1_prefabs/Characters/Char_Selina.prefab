@@ -2291,9 +2291,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e68cf2998212ec4783725fb8bdbe86a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speechMode: 1
+  speechMode: 2
   phonemeBlendRate: 18
   phonemeEnergyRate: 36
+  emotionBlendRate: 12
+  viewDirBlendRate: 15
+  viewDirModifier: 1
+  viewDirLimits: {x: 1, y: 0.7}
   preset: {fileID: 11400000, guid: 9b9cdf2597145a54e9d5b77eb6501d58, type: 2}
 --- !u!137 &137009657699178026
 SkinnedMeshRenderer:

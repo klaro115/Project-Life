@@ -48,6 +48,42 @@ namespace UFaceAnim
 		}
 
 		#endregion
+		#region Methods
+
+		public FABlendState getBlendState(FAEmotion emotion)
+		{
+			Vector4 emotVec = emotion.Vector;
+
+			float kSad = FABlendStateTools.getBlendFactor(-emotVec.x, blendCurve);
+			float kJoy = FABlendStateTools.getBlendFactor(emotVec.x, blendCurve);
+			float kDis = FABlendStateTools.getBlendFactor(-emotVec.y, blendCurve);
+			float kTru = FABlendStateTools.getBlendFactor(emotVec.y, blendCurve);
+			float kFea = FABlendStateTools.getBlendFactor(-emotVec.z, blendCurve);
+			float kAng = FABlendStateTools.getBlendFactor(emotVec.z, blendCurve);
+			float kSur = FABlendStateTools.getBlendFactor(-emotVec.w, blendCurve);
+			float kAnt = FABlendStateTools.getBlendFactor(emotVec.w, blendCurve);
+
+			// Create 'currentState' by interpolating between preset states using the current emotion:
+			FABlendState bsSad = FABlendState.lerp(ref blendStateNeutral, ref blendStateSadness, kSad);
+			FABlendState bsJoy = FABlendState.lerp(ref blendStateNeutral, ref blendStateJoy, kJoy);
+			FABlendState bsDis = FABlendState.lerp(ref blendStateNeutral, ref blendStateDisgust, kDis);
+			FABlendState bsTru = FABlendState.lerp(ref blendStateNeutral, ref blendStateTrust, kTru);
+			FABlendState bsFea = FABlendState.lerp(ref blendStateNeutral, ref blendStateFear, kFea);
+			FABlendState bsAng = FABlendState.lerp(ref blendStateNeutral, ref blendStateAnger, kAng);
+			FABlendState bsSur = FABlendState.lerp(ref blendStateNeutral, ref blendStateSurprise, kSur);
+			FABlendState bsAnt = FABlendState.lerp(ref blendStateNeutral, ref blendStateAnticipation, kAnt);
+
+			// Blend individual opposing emotional 'dimensions':
+			FABlendState bsJoySad = FABlendState.lerp(ref bsSad, ref bsJoy, 0.5f * emotVec.x + 0.5f);
+			FABlendState bsDisTru = FABlendState.lerp(ref bsDis, ref bsTru, 0.5f * emotVec.y + 0.5f);
+			FABlendState bsFeaAng = FABlendState.lerp(ref bsFea, ref bsAng, 0.5f * emotVec.z + 0.5f);
+			FABlendState bsSurAnt = FABlendState.lerp(ref bsSur, ref bsAnt, 0.5f * emotVec.w + 0.5f);
+
+			// Return the sum of all weighted states:
+			return bsJoySad + bsDisTru + bsFeaAng + bsSurAnt;
+		}
+
+		#endregion
 	}
 
 	// SPEECH BASED BLEND STATE SETUP:
@@ -96,6 +132,66 @@ namespace UFaceAnim
 
 				return bs;
 			}
+		}
+
+		#endregion
+		#region Methods
+
+		public FABlendState getBlendState(FABasePhonemes phoneme)
+		{
+			switch (phoneme)
+			{
+				case FABasePhonemes.Group0_AI:
+					return blendStateGroup0;
+				case FABasePhonemes.Group1_E:
+					return blendStateGroup1;
+				case FABasePhonemes.Group2_U:
+					return blendStateGroup2;
+				case FABasePhonemes.Group3_O:
+					return blendStateGroup3;
+				case FABasePhonemes.Group4_CDGK:
+					return blendStateGroup4;
+				case FABasePhonemes.Group5_FV:
+					return blendStateGroup5;
+				case FABasePhonemes.Group6_LTh:
+					return blendStateGroup6;
+				case FABasePhonemes.Group7_MBP:
+					return blendStateGroup7;
+				case FABasePhonemes.Group8_WQ:
+					return blendStateGroup8;
+				case FABasePhonemes.Group9_Rest:
+					return blendStateSilence;
+				default:
+					break;
+			}
+
+			return blendStateSilence;
+		}
+
+		#endregion
+	}
+
+	public static class FABlendStateTools
+	{
+		#region Methods
+
+		public static float getBlendFactor(float k, FABlendCurve blendCurve)
+		{
+			switch (blendCurve)
+			{
+				case FABlendCurve.SmoothStep:
+					{
+						float t = Mathf.Abs(k);
+						float f = 3 * t * t - 2 * t * t * t;
+						return f * Mathf.Sign(k);
+					}
+				case FABlendCurve.Square:
+					return k * k * Mathf.Sign(k);
+				default:
+					// Default to linear behaviour:
+					break;
+			}
+			return k;
 		}
 
 		#endregion
