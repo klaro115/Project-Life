@@ -11,6 +11,7 @@ namespace UFaceAnim.Audio
 		public FAAudioOrigin signalOrigin = FAAudioOrigin.AudioSource;
 
 		public int sampleCount = 256;
+		public float amplification = 1.0f;
 
 		protected AudioSource audioSrc = null;
 		protected int audioDeviceCap = 44100;

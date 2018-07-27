@@ -37,9 +37,10 @@ namespace UFaceAnim.Audio
 			{
 				energy += Mathf.Abs(samples[i]);
 			}
+			energy *= amplification;
 
 			//TEST
-			if(testCube != null)
+			if (testCube != null)
 			{
 				testCube.localScale = Vector3.one * (0.1f + energy * 0.4f);
 			}

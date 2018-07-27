@@ -19,6 +19,8 @@ namespace UFaceAnim.Audio
 		private int vowelBandCount = 1;
 		public float plosiveBandWidth = 300.0f;
 		private int plosiveBandCount = 1;
+		public float fricativeBandThreshold = 0.01f; // [%]
+		public float fricativeMinBandAmount = 0.55f;	// [%]
 
 		private float[,] bands = null;
 		private float[] vowelBandMatrix = null;
@@ -169,6 +171,8 @@ namespace UFaceAnim.Audio
 
 				energy += sample;
 			}
+			energy *= amplification;
+
 			maxEnergy = Mathf.Max(maxEnergy, energy);
 			minEnergy = Mathf.Min(minEnergy, energy);
 			float silenceLevel = Mathf.Lerp(minEnergy, maxEnergy, silenceRange);
@@ -227,8 +231,24 @@ namespace UFaceAnim.Audio
 				// >>> TODO: actually check the bands for each of the plosives just like we did with the vowels! <<<
 			}
 
+			// Check for any fricatives. In the spectrum diagram, these are similar white noise, aka non-negligeable energy across many bands:
+			{
+				int fricativeMaxBand = getFFTBandFromFrequency(vowelFrequencyRange);
+				int fricativeBandsCovered = 0;
+				for (int i = 0; i < fricativeMaxBand; ++i)
+				{
+					if (samples[i] > fricativeBandThreshold) fricativeBandsCovered++;
+				}
+				float fricativeAmount = (float)fricativeBandsCovered / fricativeMaxBand;
+				float fricativeWeight = fricativeAmount > fricativeMinBandAmount ? fricativeAmount : 0;
+				if (fricativeWeight > maxWeight)
+				{
+					maxWeight = fricativeWeight;
+					maxWeightPhoneme = FABasePhonemes.Group5_FV;
+				}
+			}
 
-			// TODO: Check for each fricative, plosive and nasal sound one after the other as well.
+			// TODO: Check for each plosive and nasal sound one after the other as well.
 
 			phoneme = maxWeightPhoneme;
 		}
