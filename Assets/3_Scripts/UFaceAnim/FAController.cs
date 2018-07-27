@@ -31,7 +31,7 @@ namespace UFaceAnim
 		private float targetPhonemeEnergy = 0.0f;
 		private float currentPhonemeEnergy = 0.0f;
 
-		//private FAEmotion currentEmotion = FAEmotion.Neutral;
+		private FAEmotion currentEmotion = FAEmotion.Neutral;
 
 		private FABlendState currentBlendSpeech = FABlendState.Default;
 		private FABlendState currentBlendState = FABlendState.Default;
@@ -56,6 +56,10 @@ namespace UFaceAnim
 			//...
 		}
 
+		public void setEmotion(FAEmotion emotion)
+		{
+			currentEmotion = emotion;
+		}
 		public void setPhoneme(FABasePhonemes phoneme, float energy)
 		{
 			targetPhoneme = phoneme;
@@ -67,11 +71,15 @@ namespace UFaceAnim
 			switch (blendCurve)
 			{
 				case FABlendCurve.SmoothStep:
-					return 3 * k * k - 2 * k * k * k;
+				{
+					float t = Mathf.Abs(k);
+					float f = 3 * t * t - 2 * t * t * t;
+					return f * Mathf.Sign(k);
+				}
 				case FABlendCurve.Square:
-					return k * k;
-					// Default to linear behaviour:
+					return k * k * Mathf.Sign(k);
 				default:
+					// Default to linear behaviour:
 					break;
 			}
 			return k;
@@ -114,29 +122,38 @@ namespace UFaceAnim
 
 		private FABlendState updateBlendStatesEmotion()
 		{
-			// TODO: Implement emotion structure and read clamped/normalized values from there.
-
-			//...
-
 			FABlendCurve blendCurve = preset.blendShapeSetup.blendCurve;
 
-			float kJoySad = getBlendFactor(0.0f, blendCurve);
-			float kDisTru = getBlendFactor(0.0f, blendCurve);
-			float kFeaAng = getBlendFactor(0.0f, blendCurve);
-			float kSurAnt = getBlendFactor(0.0f, blendCurve);
+			Vector4 emotVec = currentEmotion.Vector;
 
-			float kTotal = getBlendFactor(0.0f, blendCurve);
+			float kSad = getBlendFactor(-emotVec.x, blendCurve);
+			float kJoy = getBlendFactor(emotVec.x, blendCurve);
+			float kDis = getBlendFactor(-emotVec.y, blendCurve);
+			float kTru = getBlendFactor(emotVec.y, blendCurve);
+			float kFea = getBlendFactor(-emotVec.z, blendCurve);
+			float kAng = getBlendFactor(emotVec.z, blendCurve);
+			float kSur = getBlendFactor(-emotVec.w, blendCurve);
+			float kAnt = getBlendFactor(emotVec.w, blendCurve);
 
 			// Create 'currentState' by interpolating between preset states using the current emotion:
-			FABlendState bsJoySad = FABlendState.lerp(ref preset.blendShapeSetup.blendStateSadness, ref preset.blendShapeSetup.blendStateJoy, kJoySad);
-			FABlendState bsDisTru = FABlendState.lerp(ref preset.blendShapeSetup.blendStateDisgust, ref preset.blendShapeSetup.blendStateTrust, kDisTru);
-			FABlendState bsFeaAng = FABlendState.lerp(ref preset.blendShapeSetup.blendStateFear, ref preset.blendShapeSetup.blendStateAnger, kFeaAng);
-			FABlendState bsSurAnt = FABlendState.lerp(ref preset.blendShapeSetup.blendStateSurprise, ref preset.blendShapeSetup.blendStateAnticipation, kSurAnt);
+			FABlendState bsSad = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref preset.blendShapeSetup.blendStateSadness, kSad);
+			FABlendState bsJoy = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref preset.blendShapeSetup.blendStateJoy, kJoy);
+			FABlendState bsDis = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref preset.blendShapeSetup.blendStateDisgust, kDis);
+			FABlendState bsTru = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref preset.blendShapeSetup.blendStateTrust, kTru);
+			FABlendState bsFea = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref preset.blendShapeSetup.blendStateFear, kFea);
+			FABlendState bsAng = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref preset.blendShapeSetup.blendStateAnger, kAng);
+			FABlendState bsSur = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref preset.blendShapeSetup.blendStateSurprise, kSur);
+			FABlendState bsAnt = FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref preset.blendShapeSetup.blendStateAnticipation, kAnt);
+
+			// Blend individual opposing emotional 'dimensions':
+			FABlendState bsJoySad = FABlendState.lerp(ref bsSad, ref bsJoy, 0.5f * emotVec.x + 0.5f);
+			FABlendState bsDisTru = FABlendState.lerp(ref bsDis, ref bsTru, 0.5f * emotVec.y + 0.5f);
+			FABlendState bsFeaAng = FABlendState.lerp(ref bsFea, ref bsAng, 0.5f * emotVec.z + 0.5f);
+			FABlendState bsSurAnt = FABlendState.lerp(ref bsSur, ref bsAnt, 0.5f * emotVec.w + 0.5f);
 
 			FABlendState bsTotal = bsJoySad + bsDisTru + bsFeaAng + bsSurAnt;
-			bsTotal.scale(0.25f);
 
-			return FABlendState.lerp(ref preset.blendShapeSetup.blendStateNeutral, ref bsTotal, kTotal);
+			return bsTotal;
 		}
 
 		private FABlendState updateBlendStatesSpeech(float deltaTime)

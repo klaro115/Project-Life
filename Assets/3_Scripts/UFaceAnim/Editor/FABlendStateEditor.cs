@@ -21,13 +21,15 @@ namespace UFaceAnim.Editor
 		private FABaseEmotions targetEmotion = FABaseEmotions.Neutral;
 		private FABasePhonemes targetPhoneme = FABasePhonemes.None;
 
+		private FAEmotion testEmotion = FAEmotion.Neutral;
+
 		#endregion
 		#region Methods
 
 		[MenuItem("Window/UFaceAnim/Blend State Editor")]
 		public static FABlendStateEditor showEditorWindow()
 		{
-			Rect rect = new Rect(100, 100, 300, 386);
+			Rect rect = new Rect(100, 100, 300, 470);
 			FABlendStateEditor bse = EditorWindow.GetWindowWithRect<FABlendStateEditor>(rect, true, "Blend State");
 			return bse;
 		}
@@ -84,7 +86,7 @@ namespace UFaceAnim.Editor
 
 			currentState.eyesCloseL = EditorGUILayout.Slider("Close L", currentState.eyesCloseL, 0, 1);
 			currentState.eyesCloseR = EditorGUILayout.Slider("Close R", currentState.eyesCloseR, 0, 1);
-			currentState.eyesWander = EditorGUILayout.Slider("Wander", currentState.eyesWander, -1, 1);
+			currentState.eyesWander = EditorGUILayout.Slider("Wander", currentState.eyesWander, 0, 1);
 
 			// If a UI control was manipulated:
 			if(GUI.changed)
@@ -123,6 +125,28 @@ namespace UFaceAnim.Editor
 			EditorGUI.EndDisabledGroup();
 
 			EditorGUILayout.EndHorizontal();
+	
+			if(!phonemeMode && controller != null)
+			{
+				EditorGUILayout.Separator();
+
+				bool prevEmotChanged = GUI.changed;
+				GUI.changed = false;
+
+				Vector4 testEmotVector = testEmotion.Vector;
+				testEmotVector.x = EditorGUILayout.Slider("Sadness/Joy", testEmotVector.x, -1, 1);
+				testEmotVector.y = EditorGUILayout.Slider("Disgust/Trust", testEmotVector.y, -1, 1);
+				testEmotVector.z = EditorGUILayout.Slider("Fear/Anger", testEmotVector.z, -1, 1);
+				testEmotVector.w = EditorGUILayout.Slider("Surprise/Anticipation", testEmotVector.w, -1, 1);
+
+				if(GUI.changed)
+				{
+					testEmotion.Vector = testEmotVector;
+					controller.setEmotion(testEmotion);
+					controller.update(999);	// deltaTime of 100 to ensure immediate results.
+				}
+				GUI.changed = GUI.changed || prevEmotChanged;
+			}
 		}
 
 		private void updateController()

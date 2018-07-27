@@ -36,4 +36,28 @@ public class Cubemapper : MonoBehaviour
 			}
 		}
 	}
+
+	[ContextMenu("Render View")]
+	public void renderToTexture()
+	{
+		Camera cam = GetComponent<Camera>();
+		RenderTexture renderTex = new RenderTexture(imageSize, imageSize, 24, RenderTextureFormat.ARGB32);
+
+		cam.targetTexture = renderTex;
+		cam.Render();
+		RenderTexture.active = renderTex;
+
+		Texture2D tex = new Texture2D(imageSize, imageSize, TextureFormat.RGBA32, false);
+		tex.ReadPixels(new Rect(0, 0, imageSize, imageSize), 0, 0);
+		tex.Apply();
+
+		cam.targetTexture = null;
+
+		byte[] pngBytes = tex.EncodeToPNG();
+
+		using (BinaryWriter writer = new BinaryWriter(File.Open(fileName + "_render.png", FileMode.OpenOrCreate)))
+		{
+			writer.Write(pngBytes);
+		}
+	}
 }
