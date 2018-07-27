@@ -37,6 +37,14 @@ namespace UFaceAnim
 		private FABlendState currentBlendState = FABlendState.Default;
 
 		#endregion
+		#region Properties
+
+		public FAPresets Preset
+		{
+			get { return preset; }
+		}
+
+		#endregion
 		#region Methods
 
 		[ContextMenu("Initialize")]

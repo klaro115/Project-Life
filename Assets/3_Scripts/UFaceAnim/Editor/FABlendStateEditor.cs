@@ -41,6 +41,10 @@ namespace UFaceAnim.Editor
 			if (selectionGO != null && (controller == null || selectionGO != controller.gameObject))
 			{
 				controller = selectionGO.GetComponent<FAController>();
+				if(asset == null && controller.Preset != null)
+				{
+					asset = controller.Preset;
+				}
 				Repaint();
 			}
 		}
