@@ -11,6 +11,7 @@ namespace UFaceAnim
 
 		public FABlendSetupEmotion blendShapeSetup = FABlendSetupEmotion.Default;
 		public FABlendSetupSpeech blendShapesSpeech = FABlendSetupSpeech.Default;
+		public FABlendLibrary blendStateLibrary = FABlendLibrary.Empty;
 
 		#endregion
 	}

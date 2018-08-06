@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
+[AddComponentMenu("Scripts/Misc/Cubemapper")]
 [RequireComponent(typeof(Camera))]
 public class Cubemapper : MonoBehaviour
 {

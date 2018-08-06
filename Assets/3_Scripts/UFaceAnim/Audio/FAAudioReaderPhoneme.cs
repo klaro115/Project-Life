@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace UFaceAnim.Audio
 {
+	[AddComponentMenu("Scripts/UFaceAnim/Audio/Phoneme Reader")]
 	[RequireComponent(typeof(AudioSource))]
 	public class FAAudioReaderPhoneme : FAAudioReader
 	{

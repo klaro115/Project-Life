@@ -4,6 +4,7 @@ using UFaceAnim.Audio;
 
 namespace UFaceAnim.Test
 {
+	[AddComponentMenu("Scripts/UFaceAnim/Test/Speech Energy")]
 	public class FADemoSpeechEnergy : MonoBehaviour
 	{
 		#region Fields
@@ -78,7 +79,7 @@ namespace UFaceAnim.Test
 			if(testViewDir)
 			{
 				float viewTargetPhase = Time.time * 0.5f;
-				viewTargetPos = controller.transform.TransformPoint(new Vector3(Mathf.Cos(viewTargetPhase) * 3, 1.6f, Mathf.Sin(viewTargetPhase) * 3 + 4));
+				viewTargetPos = controller.transform.TransformPoint(new Vector3(Mathf.Cos(viewTargetPhase) * 3, 1.6f, Mathf.Sin(viewTargetPhase) * 3 + 6));
 				viewEyePos = controller.transform.TransformPoint(Vector3.up * 1.55f);
 				viewDirection = (viewTargetPos - viewEyePos).normalized;
 

@@ -7,11 +7,21 @@ namespace UFaceAnim.Editor
 	[System.Serializable]
 	public class FABlendStateEditor : EditorWindow
 	{
+		#region Types
+
+		public enum Mode
+		{
+			Emotions,
+			Phonemes,
+			Library
+		}
+
+		#endregion
 		#region Fields
 
 		[SerializeField]
 		private bool changed = false;
-		private bool phonemeMode = false;
+		private Mode mode = Mode.Emotions;
 
 		public FAPresets asset = null;
 		public FAController controller = null;
@@ -20,6 +30,7 @@ namespace UFaceAnim.Editor
 		private FABlendState currentState = FABlendState.Default;
 		private FABaseEmotions targetEmotion = FABaseEmotions.Neutral;
 		private FABasePhonemes targetPhoneme = FABasePhonemes.None;
+		private string targetLibState = "";
 
 		private FAEmotion testEmotion = FAEmotion.Neutral;
 
@@ -47,6 +58,12 @@ namespace UFaceAnim.Editor
 				}
 				Repaint();
 			}
+
+			// Update the emotion at runtime while in play-mode:
+			if(asset != null && controller != null && Application.isPlaying)
+			{
+				controller.update(Time.deltaTime);
+			}
 		}
 
 		public void OnGUI()
@@ -60,11 +77,14 @@ namespace UFaceAnim.Editor
 
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label("Mode:", EditorStyles.toolbarButton);
-			EditorGUI.BeginDisabledGroup(!phonemeMode);
-			if (GUILayout.Button("Emotions", EditorStyles.toolbarButton)) phonemeMode = false;
+			EditorGUI.BeginDisabledGroup(mode == Mode.Emotions);
+			if (GUILayout.Button("Emotions", EditorStyles.toolbarButton)) mode = Mode.Emotions;
 			EditorGUI.EndDisabledGroup();
-			EditorGUI.BeginDisabledGroup(phonemeMode);
-			if (GUILayout.Button("Phonemes", EditorStyles.toolbarButton)) phonemeMode = true;
+			EditorGUI.BeginDisabledGroup(mode == Mode.Phonemes);
+			if (GUILayout.Button("Phonemes", EditorStyles.toolbarButton)) mode = Mode.Phonemes;
+			EditorGUI.EndDisabledGroup();
+			EditorGUI.BeginDisabledGroup(mode == Mode.Library);
+			if (GUILayout.Button("Library", EditorStyles.toolbarButton)) mode = Mode.Library;
 			EditorGUI.EndDisabledGroup();
 			EditorGUILayout.EndHorizontal();
 
@@ -105,15 +125,22 @@ namespace UFaceAnim.Editor
 
 			EditorGUILayout.Separator();
 
-			if(!phonemeMode)
+			switch (mode)
 			{
+			case Mode.Emotions:
 				GUIContent targetEmotCont = new GUIContent("Target emotion", "Which emotion to save the currently displayed blend state as.");
 				targetEmotion = (FABaseEmotions)EditorGUILayout.EnumPopup(targetEmotCont, targetEmotion);
-			}
-			else
-			{
+				break;
+			case Mode.Phonemes:
 				GUIContent targetPhonCont = new GUIContent("Target phoneme", "Which 'phoneme' to save the currently displayed blend state as.");
 				targetPhoneme = (FABasePhonemes)EditorGUILayout.EnumPopup(targetPhonCont, targetPhoneme);
+				break;
+			case Mode.Library:
+				GUIContent targetLibCont = new GUIContent("Target entry", "String key under which to save the currently displayed blend state.");
+				targetLibState = EditorGUILayout.DelayedTextField(targetLibCont, targetLibState);
+				break;
+			default:
+				break;
 			}
 
 			EditorGUILayout.BeginHorizontal();
@@ -123,7 +150,7 @@ namespace UFaceAnim.Editor
 				loadBlendState();
 			}
 
-			EditorGUI.BeginDisabledGroup(!phonemeMode && targetEmotion == FABaseEmotions.None);
+			EditorGUI.BeginDisabledGroup(mode == Mode.Emotions && targetEmotion == FABaseEmotions.None);
 			if (GUILayout.Button("Apply blend states"))
 			{
 				saveBlendStates();
@@ -132,7 +159,7 @@ namespace UFaceAnim.Editor
 
 			EditorGUILayout.EndHorizontal();
 	
-			if(!phonemeMode && controller != null)
+			if(mode == Mode.Emotions && controller != null)
 			{
 				EditorGUILayout.Separator();
 
@@ -168,7 +195,7 @@ namespace UFaceAnim.Editor
 		{
 			if (asset == null) return;
 
-			if(!phonemeMode)
+			if(mode == Mode.Emotions)
 			{
 				// Load target state blend weights from asset:
 				switch (targetEmotion)
@@ -202,7 +229,7 @@ namespace UFaceAnim.Editor
 						break;
 				}
 			}
-			else
+			else if(mode == Mode.Phonemes)
 			{
 				// Load target state blend weights from asset:
 				switch (targetPhoneme)
@@ -242,6 +269,19 @@ namespace UFaceAnim.Editor
 						break;
 				}
 			}
+			else if(mode == Mode.Library)
+			{
+				FABlendStateHandle outHandle = FABlendStateHandle.Default;
+				if(asset.blendStateLibrary.getState(targetLibState, ref outHandle))
+				{
+					currentState = outHandle.state;
+				}
+				else
+				{
+					Debug.LogError("[FABlendStateEditor] Error: Library blend state '" + targetLibState +
+						"' does not exist in preset asset '" + asset.name + "'.");
+				}
+			}
 
 			updateController();
 			changed = false;
@@ -251,7 +291,7 @@ namespace UFaceAnim.Editor
 		{
 			if (asset == null) return;
 
-			if(!phonemeMode)
+			if(mode == Mode.Emotions)
 			{
 				// Write the current state to the selected target state in the asset:
 				switch (targetEmotion)
@@ -287,7 +327,7 @@ namespace UFaceAnim.Editor
 						break;
 				}
 			}
-			else
+			else if(mode == Mode.Phonemes)
 			{
 				// Write the current state to the selected target state in the asset:
 				switch (targetPhoneme)
@@ -328,6 +368,10 @@ namespace UFaceAnim.Editor
 					default:
 						break;
 				}
+			}
+			else if(mode == Mode.Library)
+			{
+				asset.blendStateLibrary.setState(targetLibState, currentState);
 			}
 
 			// Save asset:
