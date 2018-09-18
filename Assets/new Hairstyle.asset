@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e47db54feef4f40a794a37e81daeb4f3, type: 3}
+  m_Name: new Hairstyle
+  m_EditorClassIdentifier: 
+  regions:
+  - x: 0
+    y: 0.2
+    length:
+      min: 0.05
+      max: 0.15
+  - x: 0.25
+    y: 0.05
+    length:
+      min: 0.125
+      max: 0.275
+  - x: 0.5
+    y: 0
+    length:
+      min: 0.175
+      max: 0.325
+  - x: 0.25
+    y: 0.05
+    length:
+      min: 0.125
+      max: 0.275
+  lengthRandom: 0
+  posXRandom: 0
+  posYRandom: 0.02
+  segmentLength: 0.02
+  segmentWidth: 0.05
