@@ -35,6 +35,15 @@ namespace UHairGen
 			return Random.Range(min, max);
 		}
 
+		public static HGRange lerp(HGRange a, HGRange b, float k)
+		{
+			return new HGRange()
+			{
+				min = Mathf.Lerp(a.min, b.min, k),
+				max = Mathf.Lerp(a.max, b.max, k)
+			};
+		}
+
 		#endregion
 	}
 }

@@ -12,6 +12,8 @@ namespace UHairGen
 		#region Fields
 
 		private bool rebuild = true;
+		[SerializeField]
+		private bool showRegionPreview = true;
 
 		public HGHair hair = null;
 		public HGHairBody body = null;
@@ -151,7 +153,10 @@ namespace UHairGen
 				rolRegions.onRemoveCallback = callbackRegionRemove;
 				rolRegions.drawElementCallback = callbackRegionElement;
 				rolRegions.drawHeaderCallback = callbackRegionHeader;
-				//rolRegions.elementHeight = 32;
+			}
+			else if(hair.regions != null && rolRegions.list != hair.regions)
+			{
+				rolRegions.list = hair.regions;
 			}
 
 			rolRegions.DoLayoutList();
@@ -166,6 +171,7 @@ namespace UHairGen
 			{
 				hair.regions = new HGRegion[1] { newRegion };
 				inList.list = hair.regions;
+				inList.index = 0;
 				return;
 			}
 			HGRegion[] regionsNew = new HGRegion[regionsOld.Length + 1];
@@ -175,6 +181,7 @@ namespace UHairGen
 			regionsNew[regionsOld.Length] = newRegion;
 			hair.regions = regionsNew;
 			inList.list = hair.regions;
+			inList.index = regionsNew.Length - 1;
 		}
 		private void callbackRegionRemove(ReorderableList inList)
 		{
@@ -201,30 +208,34 @@ namespace UHairGen
 			float h = rect.height;
 			float x = rect.x;
 			float y = rect.y;
-			float w0 = Mathf.Floor(rect.width * 0.25f);
-			float w1 = Mathf.Floor(rect.width * 0.5f);
+			float w0 = Mathf.Floor(rect.width * 0.2f);
+			float w1 = Mathf.Floor(rect.width * 0.4f);
 			Rect r0 = new Rect(x, y, w0-1, h);
 			Rect r1 = new Rect(x + w0 + 1, y, w0-1, h);
-			Rect r2 = new Rect(x + w1 + 2, y, w1-2, h);
+			Rect r2 = new Rect(x + w1 + 2, y, rect.width-2*w0-2, h);
 
-			hair.regions[index].x = EditorGUI.Slider(r0, hair.regions[index].x, 0.0f, 1.0f);
-			hair.regions[index].y = EditorGUI.Slider(r1, hair.regions[index].y, 0.0f, 1.0f);
+			hair.regions[index].x = EditorGUI.FloatField(r0, hair.regions[index].x);
+			hair.regions[index].y = EditorGUI.FloatField(r1, hair.regions[index].y);
 			EditorGUI.MinMaxSlider(r2, ref hair.regions[index].length.min, ref hair.regions[index].length.max, 0, 1);
 		}
 		private void callbackRegionHeader(Rect rect)
 		{
 			float w = rect.width - 13;
-			float w0 = Mathf.Floor(w * 0.25f);
-			float w1 = Mathf.Floor(w * 0.5f);
+			float w0 = Mathf.Floor(w * 0.2f);
+			float w1 = Mathf.Floor(w * 0.6f);
 			EditorGUI.LabelField(new Rect(rect.x + 13, rect.y, w0, rect.height), "x");
 			EditorGUI.LabelField(new Rect(rect.x + 13 + w0, rect.y, w0, rect.height), "y");
-			EditorGUI.LabelField(new Rect(rect.x + 13 + w1, rect.y, w1, rect.height), "Length (min/max)");
+			EditorGUI.LabelField(new Rect(rect.x + 13 + 2 * w0, rect.y, w1, rect.height), "Length (min/max)");
 		}
 
 		private void drawRegionsPreview()
 		{
-			EditorGUILayout.LabelField("Preview:", EditorStyles.boldLabel);
+			// Allow the preview section to be opened and closed via a foldout:
+			showRegionPreview = EditorGUILayout.Foldout(showRegionPreview, "Preview", true);
+			if (!showRegionPreview) return;
 
+			// Draw the preview container and some reference objects:
+			const float previewLengthScale = 64.0f;
 			const float r0 = 32.0f;
 			float offsetX = 1;
 			float offsetY = 102 + rolRegions.GetHeight();
@@ -237,26 +248,78 @@ namespace UHairGen
 			Handles.DrawWireDisc(c, Vector3.forward, r0);
 			Handles.DrawLine(c - Vector3.up * r0, c + Vector3.up * r0);
 			Handles.DrawLine(c - Vector3.right * r0, c + Vector3.right * r0);
+
+			Vector3 cc = new Vector3(offsetX + 235, offsetY+235, 0);
+			Handles.color = Color.blue;
+			Handles.DrawLine(cc, cc + Vector3.right * 16);
 			Handles.color = Color.red;
-			Handles.DrawLine(c + Vector3.up * r0, c + Vector3.up * r0 * 2);
+			Handles.DrawLine(cc, cc + Vector3.up * 16);
+			EditorGUI.DrawRect(new Rect(cc.x - 2, cc.y - 2, 2, 2), Color.green);
 
 			if (hair.regions == null || hair.regions.Length == 0) return;
 
+			// Draw control points as designated by the entries in the hairstyle's regions array:
+			float modY = 1.0f;
 			for (int i = 0; i < hair.regions.Length; ++i)
 			{
 				HGRegion region = hair.regions[i];
-				float l = r0 + region.length.Center * 10;
+				float l = r0 + region.length.max * previewLengthScale;
 				float ang = region.x * Mathf.PI * 2.0f;
 				float angY = region.y * Mathf.PI * 0.5f;
-				float lY = Mathf.Sin(angY) * l;
-				float posX = Mathf.Cos(ang) * lY - 2 + c.x;
-				float posY = Mathf.Sin(ang) * lY - 2 + c.y;
-				EditorGUI.DrawRect(new Rect(posX, posY, 4, 4), Color.yellow);
+				modY = Mathf.Sin(angY);
+				Vector2 dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));
+				Vector2 pos = (Vector2)c + dir * modY * l;
+				Vector2 pos0 = (Vector2)c + dir * modY * r0;
+				EditorGUI.DrawRect(new Rect(pos0.x - 1.5f, pos0.y - 1.5f, 3, 3), new Color(1,1,0,0.35f));
+				EditorGUI.DrawRect(new Rect(pos.x - 1.5f, pos.y - 1.5f, 3, 3), Color.yellow);
 			}
-			Handles.color = Color.yellow;
-			for (int i = 0; i < 32; ++i)
-			{
 
+			// Draw two closed lines/curves showing the min/max lengths of the hair strands radially across the hair body:
+			int j = 0;
+			int curIndex = hair.regions[0].x > 0 ? hair.regions.Length - 1 : 0;
+			HGRegion curRegion = hair.regions[curIndex];
+			int nextIndex = hair.regions.Length > 1 ? 1 : 0;
+			HGRegion nextRegion = hair.regions[nextIndex];
+			float curInvDiffX = 1.0f / Mathf.Abs(nextRegion.x - curRegion.x);
+
+			Handles.color = Color.yellow;
+			modY = Mathf.Sin(curRegion.y * Mathf.PI * 0.5f);
+			Vector3 prevMin = c + Vector3.right * (r0 + curRegion.length.min * previewLengthScale) * modY;
+			Vector3 prevMax = c + Vector3.right * (r0 + curRegion.length.max * previewLengthScale) * modY;
+			for (int i = 0; i < 33; ++i)
+			{
+				float x = i * 0.03125f; // aka: x = i / 32;
+				if(x > nextRegion.x)
+				{
+					for(; j < hair.regions.Length + 1; ++j)
+					{
+						int jIndex = j < hair.regions.Length ? j : 0;
+						curRegion = nextRegion;
+						nextRegion = hair.regions[jIndex];
+						if (x <= nextRegion.x)
+						{
+							if (nextRegion.x < curRegion.x) nextRegion.x = 1.0f - nextRegion.x;
+							curInvDiffX = 1.0f / Mathf.Abs(nextRegion.x - curRegion.x);
+							break;
+						}
+					}
+				}
+				float k = Mathf.Abs(x - curRegion.x) * curInvDiffX;
+				float y = Mathf.Lerp(curRegion.y, nextRegion.y, k);
+				float lMin = Mathf.Lerp(curRegion.length.min, nextRegion.length.min, k) * previewLengthScale;
+				float lMax = Mathf.Lerp(curRegion.length.max, nextRegion.length.max, k) * previewLengthScale;
+
+				float angY = y * Mathf.PI * 0.5f;
+				float ang = x * Mathf.PI * 2;
+				modY = Mathf.Sin(angY);
+				Vector3 dir = new Vector3(Mathf.Cos(ang), Mathf.Sin(ang), 0) * modY;
+				Vector3 posMin = c + dir * (r0 + lMin);
+				Vector3 posMax = c + dir * (r0 + lMax);
+				Handles.DrawLine(prevMin, posMin);
+				Handles.DrawLine(prevMax, posMax);
+
+				prevMin = posMin;
+				prevMax = posMax;
 			}
 		}
 

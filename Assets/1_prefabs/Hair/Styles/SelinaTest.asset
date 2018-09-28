@@ -13,25 +13,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   regions:
   - x: 0
-    y: 0.2
+    y: 0.5
     length:
-      min: 0.05
-      max: 0.15
+      min: 0.124017164
+      max: 0.20338956
   - x: 0.25
-    y: 0.05
+    y: 0.8
     length:
-      min: 0.125
-      max: 0.275
+      min: 0.2838983
+      max: 0.47767785
   - x: 0.5
-    y: 0
+    y: 1
     length:
-      min: 0.175
-      max: 0.325
+      min: 0.34435624
+      max: 0.5423726
   - x: 0.75
-    y: 0.05
+    y: 0.8
     length:
-      min: 0.125
-      max: 0.275
+      min: 0.28813562
+      max: 0.4809968
   lengthRandom: 0
   minLengthThreshold: 0.005
   posXRandom: 0
