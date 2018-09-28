@@ -55,7 +55,10 @@ namespace UHairGen
 					DestroyImmediate(mesh);
 			}
 
-			gameObject.SetActive(false);
+			if(Application.isPlaying)
+			{
+				gameObject.SetActive(false);
+			}
 		}
 
 		private void OnDrawGizmosSelected()

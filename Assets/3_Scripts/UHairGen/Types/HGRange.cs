@@ -20,6 +20,14 @@ namespace UHairGen
 		public float max;
 
 		#endregion
+		#region Properties
+
+		public float Center
+		{
+			get { return 0.5f * (min + max); }
+		}
+
+		#endregion
 		#region Methods
 
 		public float getRandom()
