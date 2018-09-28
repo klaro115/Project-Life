@@ -15,23 +15,23 @@ MonoBehaviour:
   - x: 0
     y: 0.5
     length:
-      min: 0.124017164
-      max: 0.20338956
+      min: 0.15
+      max: 0.2791667
   - x: 0.25
     y: 0.8
     length:
-      min: 0.2838983
-      max: 0.47767785
+      min: 0.3916667
+      max: 0.50416666
   - x: 0.5
     y: 1
     length:
-      min: 0.34435624
-      max: 0.5423726
+      min: 0.5083333
+      max: 0.6666666
   - x: 0.75
     y: 0.8
     length:
-      min: 0.28813562
-      max: 0.4809968
+      min: 0.3875
+      max: 0.5000001
   lengthRandom: 0
   minLengthThreshold: 0.005
   posXRandom: 0

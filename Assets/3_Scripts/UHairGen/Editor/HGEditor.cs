@@ -275,12 +275,8 @@ namespace UHairGen
 			}
 
 			// Draw two closed lines/curves showing the min/max lengths of the hair strands radially across the hair body:
-			int j = 0;
-			int curIndex = hair.regions[0].x > 0 ? hair.regions.Length - 1 : 0;
+			int curIndex = 0;
 			HGRegion curRegion = hair.regions[curIndex];
-			int nextIndex = hair.regions.Length > 1 ? 1 : 0;
-			HGRegion nextRegion = hair.regions[nextIndex];
-			float curInvDiffX = 1.0f / Mathf.Abs(nextRegion.x - curRegion.x);
 
 			Handles.color = Color.yellow;
 			modY = Mathf.Sin(curRegion.y * Mathf.PI * 0.5f);
@@ -289,32 +285,14 @@ namespace UHairGen
 			for (int i = 0; i < 33; ++i)
 			{
 				float x = i * 0.03125f; // aka: x = i / 32;
-				if(x > nextRegion.x)
-				{
-					for(; j < hair.regions.Length + 1; ++j)
-					{
-						int jIndex = j < hair.regions.Length ? j : 0;
-						curRegion = nextRegion;
-						nextRegion = hair.regions[jIndex];
-						if (x <= nextRegion.x)
-						{
-							if (nextRegion.x < curRegion.x) nextRegion.x = 1.0f - nextRegion.x;
-							curInvDiffX = 1.0f / Mathf.Abs(nextRegion.x - curRegion.x);
-							break;
-						}
-					}
-				}
-				float k = Mathf.Abs(x - curRegion.x) * curInvDiffX;
-				float y = Mathf.Lerp(curRegion.y, nextRegion.y, k);
-				float lMin = Mathf.Lerp(curRegion.length.min, nextRegion.length.min, k) * previewLengthScale;
-				float lMax = Mathf.Lerp(curRegion.length.max, nextRegion.length.max, k) * previewLengthScale;
+				curRegion = hair.lerpRegions(x, ref curIndex);
 
-				float angY = y * Mathf.PI * 0.5f;
+				float angY = curRegion.y * Mathf.PI * 0.5f;
 				float ang = x * Mathf.PI * 2;
 				modY = Mathf.Sin(angY);
 				Vector3 dir = new Vector3(Mathf.Cos(ang), Mathf.Sin(ang), 0) * modY;
-				Vector3 posMin = c + dir * (r0 + lMin);
-				Vector3 posMax = c + dir * (r0 + lMax);
+				Vector3 posMin = c + dir * (r0 + curRegion.length.min * previewLengthScale);
+				Vector3 posMax = c + dir * (r0 + curRegion.length.max * previewLengthScale);
 				Handles.DrawLine(prevMin, posMin);
 				Handles.DrawLine(prevMax, posMax);
 

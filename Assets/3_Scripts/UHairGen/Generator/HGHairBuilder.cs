@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace UHairGen
@@ -92,16 +91,27 @@ namespace UHairGen
 			// Calculate the actual optimal number of strands to generate for this ring:
 			float angularStrandAmount = Mathf.Sin(rAngle);
 			int strandCount = Mathf.Clamp(Mathf.RoundToInt(maxStrandCount * angularStrandAmount), 1, maxStrandCount);
+			float invStrandCount = 1.0f / (float)strandCount;
 			// NOTE: Ring radius changes with inclination angle, so adjusting numbers will keep hair density constant across the mesh.
 
+			// Process some random attributes pertaining to all hair strands:
+			float lengthModifier = 1.0f + Random.Range(-hair.lengthRandom, hair.lengthRandom);
+
 			// Generate placeholder objects containing the essential data of each strand first:
+			int regionIndex = 0;
 			for (int x = 0; x < strandCount; ++x)
 			{
-				float length = 0.0f;
-				for(int i = 0; i < hair.regions.Length; ++i)
-				{
+				// Interpolate base hair data from hair regions, based on current radial coordinate:
+				float posX = x * invStrandCount;
+				HGRegion region = hair.lerpRegions(posX, ref regionIndex);
 
-				}
+				// Check angular minimum elevation prior to placing any hair strands:
+				if (rAngle > region.y * Mathf.PI) continue;
+
+				// Calculate strand length and skip any strands that are below the minimum length threshold:
+				float length = region.length.getRandom() * lengthModifier;
+				if (length < hair.minLengthThreshold) continue;
+
 
 				// TODO: Build strand placeholder objects for each hair strand, so we can later construct the mesh more directly.
 			}
