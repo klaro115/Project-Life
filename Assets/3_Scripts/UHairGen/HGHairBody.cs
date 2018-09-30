@@ -34,6 +34,9 @@ namespace UHairGen
 			Mesh mesh = HGHairBuilder.build(hair);
 			filter.sharedMesh = mesh;
 
+			// Adjust object scale to match hair mesh to the head's dimensions:
+			transform.localScale = new Vector3(radiusX, radiusY, radiusZ);
+
 			gameObject.SetActive(true);
 		}
 		[ContextMenu("Destroy hair mesh")]
@@ -45,9 +48,6 @@ namespace UHairGen
 
 				filter.mesh = null;
 				filter.sharedMesh = null;
-
-				// Adjust object scale to match hair mesh to the head's dimensions:
-				transform.localScale = new Vector3(radiusX, radiusY, radiusZ) * 2.0f;
 
 				if (!Application.isEditor)
 					Destroy(mesh);

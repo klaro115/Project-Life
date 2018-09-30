@@ -13,29 +13,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   regions:
   - x: 0
-    y: 0.5
+    y: 0.35
     length:
-      min: 0.15
-      max: 0.2791667
+      min: 0.27083334
+      max: 0.40833333
+  - x: 0.15
+    y: 0.35
+    length:
+      min: 0.2875
+      max: 0.42499998
   - x: 0.25
-    y: 0.8
+    y: 0.55
     length:
-      min: 0.3916667
-      max: 0.50416666
+      min: 0.5708333
+      max: 0.70416665
   - x: 0.5
-    y: 1
-    length:
-      min: 0.5083333
-      max: 0.6666666
-  - x: 0.75
     y: 0.8
     length:
-      min: 0.3875
-      max: 0.5000001
+      min: 0.70833325
+      max: 0.8374997
+  - x: 0.75
+    y: 0.55
+    length:
+      min: 0.5625
+      max: 0.69583327
+  - x: 0.85
+    y: 0.35
+    length:
+      min: 0.27916667
+      max: 0.42499992
   lengthRandom: 0
   minLengthThreshold: 0.005
   posXRandom: 0
   posYRandom: 0.02
-  segmentLength: 0.02
-  segmentWidth: 0.05
-  ringSpacing: 0.025
+  segmentLength: 0.03
+  segmentWidth: 0.3
+  ringSpacing: 0.03
