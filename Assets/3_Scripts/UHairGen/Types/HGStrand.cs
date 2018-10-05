@@ -23,7 +23,10 @@ namespace UHairGen
 		public int vIndexStart;	// Index of the first vertex in the geometry buffer.
 		public int vIndexCount;	// Number of vertices making up this hair strand's geometry.
 		public int tIndexStart;	// Index of the first triangle index in the geometry buffer.
-		public int tIndexCount;	// Number of triangle indices making up this strand's geometry. (index count = 3 x triangle count)
+		public int tIndexCount; // Number of triangle indices making up this strand's geometry. (index count = 3 x triangle count)
+
+		public HGNode[] nodes;  // Buffer for storing the positions of the individual edge loops where segments/divisions connect.
+		public int nodeCount;	// The number of node entries actually used/generated within the nodes buffer. (node count = quad count + 1)
 
 		#endregion
 		#region Properties
@@ -46,6 +49,9 @@ namespace UHairGen
 					vIndexCount = 0,
 					tIndexStart = -1,
 					tIndexCount = 0,
+
+					nodes = null,
+					nodeCount = 0,
 				};
 			}
 		}

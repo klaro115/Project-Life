@@ -10,28 +10,6 @@ namespace UHairGen
 	}
 
 	[System.Serializable]
-	public struct HGAnchorNode
-	{
-		#region Constructors
-
-		public HGAnchorNode(Vector3 pos, Vector3 rot, float tan = 0.1f)
-		{
-			position = pos;
-			rotation = rot;
-			tangent = tan;
-		}
-
-		#endregion
-		#region Fields
-
-		public Vector3 position;
-		public Vector3 rotation;
-		public float tangent;
-
-		#endregion
-	}
-
-	[System.Serializable]
 	public struct HGAnchor
 	{
 		#region Fields
@@ -43,7 +21,7 @@ namespace UHairGen
 		public float overwriteStiffness;	// New stiffness value attributed to hair strands pulled in by this anchor. (negative means no overwriting)
 		public HGAnchorType type;           // The type of anchor behaviour: Point, Directional, or Spline.
 		public Vector3 exitDirection;       // Exit vector, aka the direction in which the hair strands are spit out. (Directional & Spline type only)
-		public HGAnchorNode[] splineNodes;  // Spline nodes describing a curve for the anchored hair strands to follow.
+		public HGNode[] splineNodes;		// Spline nodes describing a curve for the anchored hair strands to follow.
 
 		#endregion
 	}

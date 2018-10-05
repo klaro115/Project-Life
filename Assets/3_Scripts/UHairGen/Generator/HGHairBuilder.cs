@@ -21,6 +21,13 @@ namespace UHairGen
 
 		public static void clear()
 		{
+			// Drop all strands' node lists:
+			if(strands != null)
+			{
+				for (int i = 0; i < strands.Length; ++i)
+					strands[i].nodes = null;
+			}
+
 			// Drop all references to our mesh buffer arrays, so the GC can dispose of them:
 			strands = null;
 			verts = null;
@@ -63,23 +70,27 @@ namespace UHairGen
 			vCounter = 0;
 			tCounter = 0;
 
-			// Build the actual mesh:
+			// Build hair strand data on a per-ring basis:
 			for (int r = 0; r < ringCount; ++r)
 			{
 				float ringY = maxY * ((float)r / ringCount);
-				buildRingStrandData(ringY, segmentCount, segAngle, lengthModifier, hair);
+				buildRingStrandData(ringY, segmentCount, segAngle, lengthModifier, bodyRadius, hair);
+			}
+
+			// Apply splines and anchor points to deform strand nodes:
+			for(int i = 0; i < sCounter; ++i)
+			{
+				applyStrandModifiers(ref strands[i], hair, bodyRadius);
 			}
 
 			// Construct all-linear base geometry for each hair strand:
-			for(int i = 0; i < sCounter; ++i)
+			for (int i = 0; i < sCounter; ++i)
 			{
-				buildStrandGeometry(ref strands[i], hair, bodyRadius);
+				buildStrandGeometry(ref strands[i], hair, bodyRadius);	// >>> TEMP / TODO: Change method to build geometry along the strand's nodes instead!!! <<<
 			}
 
 
-			// TODO: Generate splines, structures and anchor points along which to deform strand geometry.
-
-			// TODO: Write generated mesh data to static mesh buffers. Keep track of entry counters.
+			// TODO: Properly generate mesh data using static mesh buffers from the strands' nodes. Keep track of entry counters.
 
 
 			// Create a new mesh object:
@@ -114,7 +125,7 @@ namespace UHairGen
 			return mesh;
 		}
 
-		private static void buildRingStrandData(float posY, int maxStrandCount, float segAngle, float lengthModifier, HGHair hair)
+		private static void buildRingStrandData(float posY, int maxStrandCount, float segAngle, float lengthModifier, float bodyRadius, HGHair hair)
 		{
 			// Don't create strands if there is no hair on this ring:
 			if (hair == null || hair.regions == null || hair.regions.Length == 0 || maxStrandCount <= 0) return;
@@ -147,21 +158,90 @@ namespace UHairGen
 				float angX = posX * 360.0f;
 				float angY = posY * 180.0f;
 				Quaternion rotation = Quaternion.Euler(0, angX, 0) * Quaternion.Euler(angY, 0, 0);
-				Vector3 originDir = rotation * Vector3.up;
-				Vector3 originNorm = rotation * Vector3.forward;
+				Vector3 originDir = (rotation * Vector3.up).normalized;
+				Vector3 originNorm = (rotation * Vector3.forward).normalized;
+				Vector3 originPos = originDir * bodyRadius;
+				Quaternion originRot = Quaternion.LookRotation(originDir, Vector3.up);
 
 				// Finally, assemble the strand data:
-				HGStrand strand = HGStrand.Default;
+				int strandIndex = sCounter;
+				HGStrand strand = strands[strandIndex];
 				strand.x = posX;
 				strand.y = posY;
 				strand.length = length;
 				strand.width = hair.segmentWidth;
 				strand.segments = quadCount;
-				strand.forward = originDir.normalized;
-				strand.normal = originNorm.normalized;
+				strand.forward = originDir;
+				strand.normal = originNorm;
+
+				// Set all strand nodes to simple follow a straight line orthogonal along the strand's growth direction:
+				HGNode[] nodes = strand.nodes;
+				float nodeTangent = 0.333f * hair.segmentLength; // note: only fill in a placeholder value.
+				for (int i = 0; i < nodes.Length; ++i)
+				{
+					Vector3 nodePos = originPos + originDir * i * hair.segmentLength;
+					nodes[i] = new HGNode(nodePos, originRot, nodeTangent);
+				}
+				strand.nodeCount = quadCount + 1;
 
 				// Write strand to the buffer and increment strand counter:
 				strands[sCounter++] = strand;
+			}
+		}
+
+		private static void applyStrandModifiers(ref HGStrand strand, HGHair hair, float bodyRadius)
+		{
+			// Verify some parameters and stuff:
+			if (hair == null || strand.length < hair.minLengthThreshold || strand.width <= 0 || strand.segments < 1) return;
+
+			int prevAnchorIndex = -1;
+			for (int i = 0; i < strand.nodeCount; ++i)
+			{
+				applyNodeModifiers(ref strand, ref strand.nodes[i], i, ref prevAnchorIndex, hair, bodyRadius);
+			}
+
+			//...
+		}
+
+		private static void applyNodeModifiers(ref HGStrand strand, ref HGNode node, int nodeIndex, ref int prevAnchorIndex, HGHair hair, float bodyRadius)
+		{
+			// Figure out which anchor - if any - this strand is attached to:
+			HGAnchor[] anchors = hair.anchors;
+			int targetAnchorIndex = -1;
+			float targetAnchorWeight = 0.0f;
+			if (anchors != null)
+			{
+				// Chose anchor by calculating a weighting for each one and taking the highest weighted anchor:
+				for (int i = 0; i < anchors.Length; ++i)
+				{
+					// Don't allow strands to hook onto the same anchor two times in a row in immediate succession:
+					if (i == prevAnchorIndex) continue;
+
+					// Calculate weighting based on distance between the node and the anchor:
+					HGAnchor anchor = anchors[i];
+					Vector3 anchorPos = HGMath.getRadialDirection(anchor.x, anchor.y) * bodyRadius;
+					float anchorRadiusSq = anchor.pullRadius * anchor.pullRadius;
+					float distSq = Vector3.SqrMagnitude(anchorPos - node.position);
+					float weight = distSq < anchorRadiusSq ? 1.0f / distSq : 0;
+
+					if (weight > targetAnchorWeight)
+					{
+						targetAnchorIndex = i;
+						targetAnchorWeight = weight;
+					}
+				}
+			}
+
+			// If the node is affected by or hooked onto any anchors, apply the anchor's effects to the node.
+			if (targetAnchorIndex >= 0)
+			{
+				// TODO...
+			}
+
+			// Apply this node's pose to all subsequent nodes:
+			if(nodeIndex < strand.nodeCount)
+			{
+				// TODO...
 			}
 		}
 
@@ -258,6 +338,7 @@ namespace UHairGen
 
 			// Calculate the number of strands, verts, triangles, etc. required for constructing the given hair style:
 			int maxQuadsPerStrand = Mathf.CeilToInt(maxStrandLength / hair.segmentLength);
+			int maxNodeCount = maxQuadsPerStrand + 1;
 			int maxStrandCount = ringCount * segCount;
 			int maxQuadCount = maxStrandCount * maxQuadsPerStrand;
 			int maxVertCount = maxQuadCount * 2 + 2 * maxStrandCount;
@@ -272,10 +353,19 @@ namespace UHairGen
 			if (indices == null || indices.Length < maxIndexCount) indices = new int[maxIndexCount];
 
 			// Reset contents on all static object and mesh buffers:
-			HGStrand defaultStrand = HGStrand.Default;
-			for(int i = 0; i < maxStrandCount; ++i)
+			HGNode defaultNode = new HGNode(Vector3.zero, Quaternion.identity);
+			for (int i = 0; i < maxStrandCount; ++i)
 			{
-				strands[i] = defaultStrand;
+				HGNode[] nodes = strands[i].nodes;
+				if (nodes == null || nodes.Length < maxNodeCount) nodes = new HGNode[maxNodeCount];
+				for(int j = 0; j < nodes.Length; ++j)
+				{
+					nodes[j] = defaultNode;
+				}
+
+				HGStrand blankStrand = HGStrand.Default;
+				blankStrand.nodes = nodes;
+				strands[i] = blankStrand;
 			}
 			Color defaultColor = new Color(1, 1, 1, 1);
 			for (int i = 0; i < maxVertCount; ++i)

@@ -33,6 +33,11 @@ namespace UHairGen
 			}
 		}
 
+		public static Vector3 getRadialDirection(float x, float y)
+		{
+			return new Vector3();	// TODO
+		}
+
 		#endregion
 	}
 }
