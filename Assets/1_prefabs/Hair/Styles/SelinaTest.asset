@@ -15,23 +15,23 @@ MonoBehaviour:
   - x: 0
     y: 0.35
     length:
-      min: 0.27083334
-      max: 0.40833333
+      min: 0.27916667
+      max: 0.41666648
   - x: 0.15
     y: 0.35
     length:
       min: 0.2875
-      max: 0.42499998
+      max: 0.42083335
   - x: 0.25
     y: 0.55
     length:
-      min: 0.5708333
-      max: 0.70416665
+      min: 0.56666666
+      max: 0.7
   - x: 0.5
     y: 0.8
     length:
-      min: 0.70833325
-      max: 0.8374997
+      min: 0.64583355
+      max: 0.775
   - x: 0.75
     y: 0.55
     length:
@@ -42,6 +42,9 @@ MonoBehaviour:
     length:
       min: 0.27916667
       max: 0.42499992
+  topRegionLength:
+    min: 0.34
+    max: 0.4
   lengthRandom: 0
   minLengthThreshold: 0.005
   posXRandom: 0
@@ -49,3 +52,15 @@ MonoBehaviour:
   segmentLength: 0.03
   segmentWidth: 0.3
   ringSpacing: 0.03
+  anchors:
+  - name: Ponytail
+    x: 0.5
+    y: 0.4
+    pullRadius: 0
+    overwriteStiffness: 0
+    type: 0
+    exitDirection: {x: 0, y: 0, z: 0}
+    splineNodes: []
+  anchorPullFactor: 0.8
+  anchorMinWeightThreshold: 0.1
+  stiffness: 0.9

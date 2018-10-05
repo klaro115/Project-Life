@@ -85,18 +85,31 @@ namespace UHairGen
 			// Create a new mesh object:
 			Mesh mesh = new Mesh();
 
-			//TEMP:
+			// Assemble mesh from static buffer contents:
 			Vector3[] meshVerts = new Vector3[vCounter];
+			Vector2[] meshUVs = new Vector2[vCounter];
+			Color[] meshColors = new Color[vCounter];
 			for (int i = 0; i < meshVerts.Length; ++i)
+			{
 				meshVerts[i] = verts[i];
+				meshUVs[i] = uvs[i];
+				meshColors[i] = colors[i];
+			}
 			int[] meshIndices = new int[tCounter];
 			for (int i = 0; i < meshIndices.Length; ++i)
+			{
 				meshIndices[i] = indices[i];
+			}
+
 			mesh.vertices = meshVerts;
 			mesh.triangles = meshIndices;
-
-			// TODO: Write hair stand mesh structures to mesh:
-
+			mesh.uv = meshUVs;
+			mesh.colors = meshColors;
+			
+			// Recalculate mesh normals and the likes:
+			mesh.RecalculateBounds();
+			mesh.RecalculateNormals();
+			mesh.RecalculateTangents();
 
 			return mesh;
 		}
@@ -118,7 +131,7 @@ namespace UHairGen
 			{
 				// Interpolate base hair data from hair regions, based on current radial coordinate:
 				float posX = x * invStrandCount;
-				HGRegion region = hair.lerpRegions(posX, ref regionIndex);
+				HGRegion region = hair.lerpRegions(posX, posY, ref regionIndex);
 
 				// Check angular minimum elevation prior to placing any hair strands:
 				if (posY > region.y) continue;
@@ -163,14 +176,22 @@ namespace UHairGen
 			float sl0 = hair.segmentLength;
 			Vector3 forward = strand.forward;
 			Vector3 up = strand.normal;
-			Vector3 right = Vector3.Cross(forward, up); // todo: test if this needs flipping first.
+			Vector3 right = -Vector3.Cross(forward, up); // todo: test if this needs flipping first.
 			Vector3 origin = forward * bodyRadius;
 			Vector3 segWidth = right * w * 0.5f;
+			Color defaultVertexColor = Color.white;
+
+			int vBaseIndex = vCounter;
+			int tBaseIndex = tCounter;
 
 			// Create the base vertices:
 			verts[vCounter++] = origin - segWidth;
 			verts[vCounter++] = origin + segWidth;
-			
+			uvs[vBaseIndex] = new Vector2(0, 0);
+			uvs[vBaseIndex + 1] = new Vector2(1, 0);
+			colors[vBaseIndex] = defaultVertexColor;
+			colors[vBaseIndex + 1] = defaultVertexColor;
+
 			// Iterate over the strand's segments/quads and generate geometry:
 			for (int i = 0; i < strand.segments; ++i)
 			{
@@ -180,21 +201,34 @@ namespace UHairGen
 				float curLength = i * sl0 + sl;
 				int curIndex = vCounter;
 
-				// Create vertices and uvs:
+				// Create vertices:
 				Vector3 segPos = origin + forward * curLength;
 				verts[vCounter++] = segPos - segWidth;
 				verts[vCounter++] = segPos + segWidth;
 
-				// TODO: Create UV coordinates!
+				// Calculate UV coordinates:
+				float uvY = Mathf.Clamp01(curLength / l);
+				uvs[curIndex] = new Vector2(0.0f, uvY);
+				uvs[curIndex + 1] = new Vector2(1.0f, uvY);
+
+				// Set placeholder vertex colors:
+				colors[curIndex] = defaultVertexColor;
+				colors[curIndex + 1] = defaultVertexColor;
 
 				// Create triangles:
-				indices[tCounter++] = curIndex - 1;
 				indices[tCounter++] = curIndex;
-				indices[tCounter++] = curIndex + 1;
 				indices[tCounter++] = curIndex - 1;
+				indices[tCounter++] = curIndex + 1;
 				indices[tCounter++] = curIndex - 2;
+				indices[tCounter++] = curIndex - 1;
 				indices[tCounter++] = curIndex;
 			}
+
+			// Memorize geometry indices in strand for later modulation and deformation:
+			strand.vIndexStart = vBaseIndex;
+			strand.vIndexCount = vCounter - vBaseIndex;
+			strand.tIndexStart = tBaseIndex;
+			strand.tIndexCount = tCounter - tBaseIndex;
 		}
 
 		/// <summary>
@@ -229,8 +263,6 @@ namespace UHairGen
 			int maxVertCount = maxQuadCount * 2 + 2 * maxStrandCount;
 			int maxTrisCount = maxQuadCount * 2;
 			int maxIndexCount = maxTrisCount * 3;
-//			Debug.Log("TEST: Preparing buffers for:\nmaxLen:\t" + maxStrandLength + "\nquads:\t" + maxQuadCount + "\nverts:\t" +
-//				maxVertCount + "\ntris:\t" + maxTrisCount + "\ninds:\t" + maxIndexCount);
 
 			// Check if the existing static buffers are sufficiently large to accomodate this maximum amount of data:
 			if (strands == null || strands.Length < maxStrandCount) strands = new HGStrand[maxStrandCount];

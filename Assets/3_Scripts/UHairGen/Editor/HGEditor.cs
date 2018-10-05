@@ -19,6 +19,9 @@ namespace UHairGen
 		public HGHairBody body = null;
 
 		private ReorderableList rolRegions = null;
+		private ReorderableList rolAnchors = null;
+
+		private HGEditorAnchorSpline splineEditor = null;
 
 		#endregion
 		#region Methods
@@ -43,6 +46,11 @@ namespace UHairGen
 						hair = body.hair;
 					else if(hair != null)
 						body.hair = hair;
+
+					if(splineEditor != null && splineEditor.Body != body)
+					{
+						splineEditor.setBody(body);
+					}
 
 					Repaint();
 					rebuild = true;
@@ -91,6 +99,12 @@ namespace UHairGen
 
 			EditorGUILayout.Separator();
 
+			EditorGUILayout.LabelField("Anchors:", EditorStyles.boldLabel);
+			drawAnchorsList();
+			if (hair.anchors != null && rolAnchors.index >= 0 && rolAnchors.index < hair.anchors.Length)
+			{
+				drawAnchorEditor(ref hair.anchors[rolAnchors.index]);
+			}
 
 			//...
 		}
@@ -159,7 +173,10 @@ namespace UHairGen
 				rolRegions.list = hair.regions;
 			}
 
-			rolRegions.DoLayoutList();
+			if (hair.regions != null)
+				rolRegions.DoLayoutList();
+			else
+				if (GUILayout.Button("Create region")) callbackRegionAdd(rolRegions);
 		}
 
 		private void callbackRegionAdd(ReorderableList inList)
@@ -234,70 +251,164 @@ namespace UHairGen
 			showRegionPreview = EditorGUILayout.Foldout(showRegionPreview, "Preview", true);
 			if (!showRegionPreview) return;
 
-			// Draw the preview container and some reference objects:
-			const float previewLengthScale = 64.0f;
-			const float r0 = 32.0f;
 			float offsetX = 1;
 			float offsetY = 102 + rolRegions.GetHeight();
-			Vector3 c = new Vector3(128+offsetX, 128+offsetY, 0);
 
-			EditorGUI.DrawRect(new Rect(offsetX, offsetY, 256, 256), Color.black);
-			EditorGUI.DrawRect(new Rect(offsetX+1, offsetY+1, 254, 254), new Color(0.277f, 0.277f, 0.277f));
+			HGEditorRegionPreview.drawPreview(hair, offsetX, offsetY);
+		}
 
-			Handles.color = Color.black;
-			Handles.DrawWireDisc(c, Vector3.forward, r0);
-			Handles.DrawLine(c - Vector3.up * r0, c + Vector3.up * r0);
-			Handles.DrawLine(c - Vector3.right * r0, c + Vector3.right * r0);
+		#endregion
+		#region Methods Anchors
 
-			Vector3 cc = new Vector3(offsetX + 235, offsetY+235, 0);
-			Handles.color = Color.blue;
-			Handles.DrawLine(cc, cc + Vector3.right * 16);
-			Handles.color = Color.red;
-			Handles.DrawLine(cc, cc + Vector3.up * 16);
-			EditorGUI.DrawRect(new Rect(cc.x - 2, cc.y - 2, 2, 2), Color.green);
-
-			if (hair.regions == null || hair.regions.Length == 0) return;
-
-			// Draw control points as designated by the entries in the hairstyle's regions array:
-			float modY = 1.0f;
-			for (int i = 0; i < hair.regions.Length; ++i)
+		private void drawAnchorsList()
+		{
+			if (rolAnchors == null)
 			{
-				HGRegion region = hair.regions[i];
-				float l = r0 + region.length.max * previewLengthScale;
-				float ang = region.x * Mathf.PI * 2.0f;
-				float angY = region.y * Mathf.PI * 0.5f;
-				modY = Mathf.Sin(angY);
-				Vector2 dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));
-				Vector2 pos = (Vector2)c + dir * modY * l;
-				Vector2 pos0 = (Vector2)c + dir * modY * r0;
-				EditorGUI.DrawRect(new Rect(pos0.x - 1.5f, pos0.y - 1.5f, 3, 3), new Color(1,1,0,0.35f));
-				EditorGUI.DrawRect(new Rect(pos.x - 1.5f, pos.y - 1.5f, 3, 3), Color.yellow);
+				rolAnchors = new ReorderableList(hair.anchors, typeof(HGAnchor), true, true, true, true);
+				rolAnchors.onAddCallback = callbackAnchorAdd;
+				rolAnchors.onRemoveCallback = callbackAnchorRemove;
+				rolAnchors.drawElementCallback = callbackAnchorElement;
+				rolAnchors.drawHeaderCallback = callbackAnchorHeader;
+			}
+			else if (hair.anchors != null && rolAnchors.list != hair.anchors)
+			{
+				rolAnchors.list = hair.anchors;
 			}
 
-			// Draw two closed lines/curves showing the min/max lengths of the hair strands radially across the hair body:
-			int curIndex = 0;
-			HGRegion curRegion = hair.regions[curIndex];
+			if (hair.anchors != null)
+				rolAnchors.DoLayoutList();
+			else
+				if (GUILayout.Button("Create anchor")) callbackAnchorAdd(rolAnchors);
+		}
 
-			Handles.color = Color.yellow;
-			modY = Mathf.Sin(curRegion.y * Mathf.PI * 0.5f);
-			Vector3 prevMin = c + Vector3.right * (r0 + curRegion.length.min * previewLengthScale) * modY;
-			Vector3 prevMax = c + Vector3.right * (r0 + curRegion.length.max * previewLengthScale) * modY;
-			for (int i = 0; i < 33; ++i)
+		private void callbackAnchorAdd(ReorderableList inList)
+		{
+			rebuild = true;
+			if (splineEditor != null)
 			{
-				float x = i * 0.03125f; // aka: x = i / 32;
-				curRegion = hair.lerpRegions(x, ref curIndex);
+				splineEditor.Close();
+				splineEditor = null;
+			}
+			HGAnchor[] anchorsOld = (HGAnchor[])inList.list;
+			HGAnchor newAnchor = new HGAnchor() { name="new Anchor", x=0, y=0, type=HGAnchorType.Point };
+			if (anchorsOld == null || anchorsOld.Length == 0)
+			{
+				hair.anchors = new HGAnchor[1] { newAnchor };
+				inList.list = hair.anchors;
+				inList.index = 0;
+				return;
+			}
+			HGAnchor[] anchorsNew = new HGAnchor[anchorsOld.Length + 1];
+			for (int i = 0; i < anchorsOld.Length; ++i)
+				anchorsNew[i] = anchorsOld[i];
+			anchorsNew[anchorsOld.Length] = newAnchor;
+			hair.anchors = anchorsNew;
+			inList.list = hair.anchors;
+			inList.index = anchorsNew.Length - 1;
+		}
+		private void callbackAnchorRemove(ReorderableList inList)
+		{
+			rebuild = true;
+			if (splineEditor != null)
+			{
+				splineEditor.Close();
+				splineEditor = null;
+			}
+			int index = inList.index;
+			HGAnchor[] anchorsOld = (HGAnchor[])inList.list;
+			if (anchorsOld == null || anchorsOld.Length < 2)
+			{
+				hair.anchors = null;
+				inList.list = null;
+				inList.index = -1;
+				return;
+			}
+			HGAnchor[] anchorsNew = new HGAnchor[anchorsOld.Length - 1];
+			for (int i = 0; i < anchorsNew.Length; ++i)
+				anchorsNew[i] = anchorsOld[i >= index ? i + 1 : i];
+			hair.anchors = anchorsNew;
+			inList.list = hair.anchors;
+		}
+		private void callbackAnchorElement(Rect rect, int index, bool isActive, bool isFocused)
+		{
+			if (hair.anchors == null || index < 0 || index >= hair.anchors.Length) return;
 
-				float angY = curRegion.y * Mathf.PI * 0.5f;
-				float ang = x * Mathf.PI * 2;
-				modY = Mathf.Sin(angY);
-				Vector3 dir = new Vector3(Mathf.Cos(ang), Mathf.Sin(ang), 0) * modY;
-				Vector3 posMin = c + dir * (r0 + curRegion.length.min * previewLengthScale);
-				Vector3 posMax = c + dir * (r0 + curRegion.length.max * previewLengthScale);
-				Handles.DrawLine(prevMin, posMin);
-				Handles.DrawLine(prevMax, posMax);
+			float w = rect.width - 32;
+			float h = rect.height;
+			float x = rect.x;
+			float y = rect.y;
+			float w0 = Mathf.Floor(w * 0.6f);
+			float w1 = Mathf.Floor(w * 0.2f);
+			Rect r0 = new Rect(x, y, w0 - 2, h);
+			Rect r1 = new Rect(x + w0 + 1, y, w1 - 1, h);
+			Rect r2 = new Rect(x + w0 + w1 + 2, y, w1 - 1, h);
+			Rect r3 = new Rect(x + rect.width - 32, y, 32, h);
 
-				prevMin = posMin;
-				prevMax = posMax;
+			HGAnchor anchor = hair.anchors[index];
+			EditorGUI.LabelField(r0, anchor.name);
+			hair.anchors[index].x = EditorGUI.FloatField(r1, anchor.x);
+			hair.anchors[index].y = EditorGUI.FloatField(r2, anchor.y);
+			string typeTxt = null;
+			switch (anchor.type)
+			{
+				case HGAnchorType.Directional:
+					typeTxt = "Dir.";
+					break;
+				case HGAnchorType.Spline:
+					typeTxt = "Spline";
+					break;
+				default:
+					typeTxt = "Point";
+					break;
+			}
+			EditorGUI.LabelField(r3, typeTxt);
+		}
+		private void callbackAnchorHeader(Rect rect)
+		{
+			float w = rect.width - 13 - 32;
+			float w0 = Mathf.Floor(w * 0.6f);
+			float w1 = Mathf.Floor(w * 0.2f);
+			EditorGUI.LabelField(new Rect(rect.x + 13, rect.y, w0, rect.height), "Anchor Name");
+			EditorGUI.LabelField(new Rect(rect.x + 13 + w0, rect.y, w1, rect.height), "x");
+			EditorGUI.LabelField(new Rect(rect.x + 13 + w0 + w1, rect.y, w1, rect.height), "y");
+			EditorGUI.LabelField(new Rect(rect.x + rect.width - 32, rect.y, 32, rect.height), "Type");
+		}
+
+		private void drawAnchorEditor(ref HGAnchor anchor)
+		{
+			const float labelWidth = 146;
+
+			anchor.name = EditorGUILayout.TextField("Anchor name", anchor.name);
+
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Position (x, y)", GUILayout.Width(labelWidth));
+			anchor.x = EditorGUILayout.FloatField(anchor.x);
+			anchor.y = EditorGUILayout.FloatField(anchor.y);
+			EditorGUILayout.EndHorizontal();
+
+			anchor.pullRadius = EditorGUILayout.FloatField("Pull radius", anchor.pullRadius);
+			anchor.overwriteStiffness = EditorGUILayout.FloatField("Exit stiffness", anchor.overwriteStiffness);
+
+			anchor.type = (HGAnchorType)EditorGUILayout.EnumPopup("Behaviour type", anchor.type);
+			switch (anchor.type)
+			{
+				case HGAnchorType.Directional:
+					{
+						anchor.exitDirection = EditorGUILayout.Vector3Field("Exit direction", anchor.exitDirection);
+					}
+					break;
+				case HGAnchorType.Spline:
+					{
+						anchor.exitDirection = EditorGUILayout.Vector3Field("Exit direction", anchor.exitDirection);
+						if(GUILayout.Button("Edit Spline"))
+						{
+							if(splineEditor == null) splineEditor = HGEditorAnchorSpline.getWindow();
+							if (splineEditor.Hair != hair) splineEditor.setContext(hair, body, rolAnchors.index);
+						}
+					}
+					break;
+				default:
+					break;
 			}
 		}
 
