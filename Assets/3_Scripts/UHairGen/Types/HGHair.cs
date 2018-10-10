@@ -30,12 +30,14 @@ namespace UHairGen
 		public float segmentLength = 0.02f;
 		public float segmentWidth = 0.05f;
 		public float ringSpacing = 0.025f;
+		public Vector3 meshOffset = new Vector3();
 
 		[Header("Hair styling:")]
 		public HGAnchor[] anchors = null;				//Anchors dictate where hair strands may be bound together or attached to some accessory.
 		public float anchorPullFactor = 0.8f;			// How strongly hair strands are pulled towards/attached to the nearest anchor point.
 		public float anchorMinWeightThreshold = 0.1f;	// Minimum distance/stiffness based weighting before a hair is deemed attached to an anchor.
-		public float stiffness = 0.9f;					// Mix between a gravity based shape modifier and a stiffness value. (higher value for that anime hair)
+		public float stiffness = 0.9f;                  // Mix between a gravity based shape modifier and a stiffness value. (higher value for that anime hair)
+		public float curlUp = 0.1f;						// How strongly loose hair will experience an upwards curl/tendency. [-1;1]
 
 		#endregion
 		#region Methods

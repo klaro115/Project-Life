@@ -17,8 +17,6 @@ namespace UHairGen
 		public float length;	// Length of the entire hair strand. [m]
 		public float width;		// Width/diameter of the entire hair strand's geometry. [m]
 		public float segments;	// Number of subdivisions or quads the strand is to be made up of.
-		public Vector3 forward;	// Hair growth direction, aka skull surface normal at the base of the strand.
-		public Vector3 normal;	// Hair growth normal, aka local 'up' direction along which to align quads.
 
 		public int vIndexStart;	// Index of the first vertex in the geometry buffer.
 		public int vIndexCount;	// Number of vertices making up this hair strand's geometry.
@@ -26,7 +24,8 @@ namespace UHairGen
 		public int tIndexCount; // Number of triangle indices making up this strand's geometry. (index count = 3 x triangle count)
 
 		public HGNode[] nodes;  // Buffer for storing the positions of the individual edge loops where segments/divisions connect.
-		public int nodeCount;	// The number of node entries actually used/generated within the nodes buffer. (node count = quad count + 1)
+		public int nodeCount;   // The number of node entries actually used/generated within the nodes buffer. (node count = quad count + 1)
+		public bool isAnchored;
 
 		#endregion
 		#region Properties
@@ -42,8 +41,6 @@ namespace UHairGen
 					length = 0.25f,
 					width = 0.05f,
 					segments = 1,
-					forward = Vector3.up,
-					normal = Vector3.right,
 
 					vIndexStart = -1,
 					vIndexCount = 0,
@@ -52,6 +49,7 @@ namespace UHairGen
 
 					nodes = null,
 					nodeCount = 0,
+					isAnchored = false,
 				};
 			}
 		}

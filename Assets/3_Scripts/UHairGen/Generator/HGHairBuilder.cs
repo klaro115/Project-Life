@@ -5,6 +5,23 @@ namespace UHairGen
 {
 	public static class HGHairBuilder
 	{
+		#region Types
+
+		public struct AnchorState
+		{
+			public int prevIndex;
+			public int curIndex;
+			public int splineIndex;
+			public HGAnchor anchor;
+		}
+		public struct AnchorSettings
+		{
+			public float bodyRadius;
+			public bool isWeighted;
+			public bool singleAnchor;
+		}
+
+		#endregion
 		#region Fields
 
 		private static int sCounter = 0;
@@ -157,11 +174,11 @@ namespace UHairGen
 				// Determine the growth direction and normal vector of the hair strand's mesh blade:
 				float angX = posX * 360.0f;
 				float angY = posY * 180.0f;
-				Quaternion rotation = Quaternion.Euler(0, angX, 0) * Quaternion.Euler(angY, 0, 0);
-				Vector3 originDir = (rotation * Vector3.up).normalized;
-				Vector3 originNorm = (rotation * Vector3.forward).normalized;
-				Vector3 originPos = originDir * bodyRadius;
-				Quaternion originRot = Quaternion.LookRotation(originDir, Vector3.up);
+				Quaternion originRot = Quaternion.Euler(0, angX, 0) * Quaternion.Euler(angY, 0, 0);
+				Vector3 originDir = (originRot * Vector3.up).normalized;
+				Vector3 originNorm = (originRot * Vector3.forward).normalized;
+				Vector3 originUp = Vector3.Cross(originDir, Vector3.Cross(originDir, originNorm).normalized).normalized;
+				Vector3 originPos = hair.meshOffset + originDir * bodyRadius;
 
 				// Finally, assemble the strand data:
 				int strandIndex = sCounter;
@@ -171,8 +188,6 @@ namespace UHairGen
 				strand.length = length;
 				strand.width = hair.segmentWidth;
 				strand.segments = quadCount;
-				strand.forward = originDir;
-				strand.normal = originNorm;
 
 				// Set all strand nodes to simple follow a straight line orthogonal along the strand's growth direction:
 				HGNode[] nodes = strand.nodes;
@@ -189,60 +204,193 @@ namespace UHairGen
 			}
 		}
 
-		private static void applyStrandModifiers(ref HGStrand strand, HGHair hair, float bodyRadius)
+		private static void applyStrandModifiers(ref HGStrand strand, HGHair hair, float inBodyRadius)
 		{
 			// Verify some parameters and stuff:
 			if (hair == null || strand.length < hair.minLengthThreshold || strand.width <= 0 || strand.segments < 1) return;
 
-			int prevAnchorIndex = -1;
+			AnchorState state = new AnchorState() { prevIndex = -1, curIndex = -1, splineIndex = -1 };
+			AnchorSettings settings = new AnchorSettings() { bodyRadius = inBodyRadius, isWeighted = false, singleAnchor = true };
 			for (int i = 0; i < strand.nodeCount; ++i)
 			{
-				applyNodeModifiers(ref strand, ref strand.nodes[i], i, ref prevAnchorIndex, hair, bodyRadius);
+				//HGNode prevNode = strand.nodes[Mathf.Max(i - 1, 0)];
+				applyNodeModifiers(ref strand, ref strand.nodes[i], i, ref state, hair, settings);
 			}
 
-			//...
+			// Apply gravity to lower, potentially freely dangling section of the strand:
+			int freeDanglingIndex = Mathf.Max(state.prevIndex + 1, 0);
+			if(freeDanglingIndex < strand.nodeCount - 1)
+			{
+				//Debug.Log("Applying gravity to strand at " + strand.x + "," + strand.y + " => Loose node index: " + freeDanglingIndex);
+				applyStrandEndGravity(ref strand, freeDanglingIndex, hair, inBodyRadius);
+			}
 		}
 
-		private static void applyNodeModifiers(ref HGStrand strand, ref HGNode node, int nodeIndex, ref int prevAnchorIndex, HGHair hair, float bodyRadius)
+		private static void applyNodeModifiers(ref HGStrand strand, ref HGNode node, int nodeIndex, ref AnchorState state, HGHair hair, AnchorSettings settings)
 		{
-			// Figure out which anchor - if any - this strand is attached to:
 			HGAnchor[] anchors = hair.anchors;
-			int targetAnchorIndex = -1;
-			float targetAnchorWeight = 0.0f;
-			if (anchors != null)
+
+			// If no anchor is currently acting upon this node, try finding one that does:			//TEMP: disabled for testing.
+			if(false && state.curIndex < 0 && !(settings.singleAnchor && strand.isAnchored))
 			{
-				// Chose anchor by calculating a weighting for each one and taking the highest weighted anchor:
-				for (int i = 0; i < anchors.Length; ++i)
+				// Figure out which anchor - if any - this strand is attached to:
+				int targetAnchorIndex = -1;
+				float targetAnchorWeight = 0.0f;
+				if (anchors != null)
 				{
-					// Don't allow strands to hook onto the same anchor two times in a row in immediate succession:
-					if (i == prevAnchorIndex) continue;
-
-					// Calculate weighting based on distance between the node and the anchor:
-					HGAnchor anchor = anchors[i];
-					Vector3 anchorPos = HGMath.getRadialDirection(anchor.x, anchor.y) * bodyRadius;
-					float anchorRadiusSq = anchor.pullRadius * anchor.pullRadius;
-					float distSq = Vector3.SqrMagnitude(anchorPos - node.position);
-					float weight = distSq < anchorRadiusSq ? 1.0f / distSq : 0;
-
-					if (weight > targetAnchorWeight)
+					// Chose anchor by calculating a weighting for each one and taking the highest weighted anchor:
+					for (int i = 0; i < anchors.Length; ++i)
 					{
-						targetAnchorIndex = i;
-						targetAnchorWeight = weight;
+						// Don't allow strands to hook onto the same anchor two times in a row in immediate succession:
+						if (i == state.prevIndex) continue;
+	
+						// Calculate weighting based on distance between the node and the anchor:
+						HGAnchor anchor = anchors[i];
+						Vector3 anchorPos = HGMath.getRadialDirection(anchor.x, anchor.y) * settings.bodyRadius;
+						float anchorRadiusSq = anchor.pullRadius * anchor.pullRadius;
+						float distSq = Vector3.SqrMagnitude(anchorPos - node.position);
+
+						// If the node is right within the active region of an anchor, use that right away:
+						if (distSq < anchor.centerRadius * anchor.centerRadius)
+						{
+							targetAnchorIndex = i;
+							break;
+						}
+
+						// Otherwise select based on weighting:
+						float weight = distSq < anchorRadiusSq ? 1.0f / distSq : 0;
+						if (weight > targetAnchorWeight)
+						{
+							targetAnchorIndex = i;
+							targetAnchorWeight = weight;
+
+							// When not in weighted mode, drop the search after finding a first match:
+							if (!settings.isWeighted) break;
+						}
+					}
+				}
+				// Set the most fitting anchor we found as active:
+				state.curIndex = targetAnchorIndex;
+				if(targetAnchorIndex >= 0) state.anchor = anchors[targetAnchorIndex];
+			}
+
+			// If the node is affected by or hooked onto any anchors, apply the anchor's effects to the node.
+			if (state.curIndex >= 0)
+			{
+				HGAnchor anchor = anchors[state.curIndex];
+				Debug.Log("Strand at " + strand.x + "," + strand.y + " anchored to point " + anchor.x + "," + anchor.y);
+				
+				// Mark anchored strands for later vertex-coloring and modulation:
+				strand.isAnchored = true;
+
+
+
+				// TODO: Reorient/Redirect nodes to flow directly through the anchor.
+
+
+
+				// Disconnect strand if the node has passed the anchor behaviour's target space:
+				if(nodeIndex == 0)
+				{
+					HGNode prevNode = strand.nodes[Mathf.Max(nodeIndex - 1, 0)];
+					bool disconnectAnchor = false;
+
+					// For point or direction type anchors, check if this node has passed the anchor's target range, and thus exited it:
+					if (anchor.type != HGAnchorType.Spline && anchor.checkExitPoint(node, prevNode)) disconnectAnchor = true;
+					// For spline type anchors, check if the node has exited the spline's end point:
+					else if (anchor.type == HGAnchorType.Spline && anchor.checkExitSpline(node, prevNode)) disconnectAnchor = true;
+
+					if(disconnectAnchor)
+					{
+						state.prevIndex = state.curIndex;
+						state.curIndex = -1;
+
+						// Reorient node flow direction upon exiting a directional type anchor:
+						if(anchor.type == HGAnchorType.Directional)
+						{
+							node.rotation = Quaternion.LookRotation(anchor.exitDirection.normalized, node.rotation * Vector3.forward);
+						}
 					}
 				}
 			}
 
-			// If the node is affected by or hooked onto any anchors, apply the anchor's effects to the node.
-			if (targetAnchorIndex >= 0)
-			{
-				// TODO...
-			}
-
 			// Apply this node's pose to all subsequent nodes:
-			if(nodeIndex < strand.nodeCount)
+			if(nodeIndex < strand.nodeCount - 1)
 			{
-				// TODO...
+				// Calculate the rotation 'difference' between the parent node and the current one:
+				HGNode parentNode = strand.nodes[Mathf.Max(nodeIndex - 1, 0)];
+				Quaternion parentRotation = parentNode.rotation;
+				Quaternion nodeRotation = node.rotation;
+				Quaternion deltaRotation = nodeRotation * Quaternion.Inverse(parentRotation);
+				Vector3 nodePosition = node.position;
+				
+				// Rotate all subsequent nodes around the current one:
+				for(int i = nodeIndex; i < strand.nodeCount; ++i)
+				{
+					HGNode childNode = strand.nodes[i];
+					Vector3 offset = childNode.position - nodePosition;
+					childNode.position = deltaRotation * offset + nodePosition;
+					childNode.rotation = nodeRotation;
+					strand.nodes[i] = childNode;
+				}
 			}
+		}
+
+		private static void applyStrandEndGravity(ref HGStrand strand, int startIndex, HGHair hair, float bodyRadius)
+		{
+			// Use first unanchored node to start tracing a bezier spline and use something akin to a ballistic trajectory to determine the curve's end node:
+			HGNode startNode = strand.nodes[startIndex];
+			Vector3 v0 = startNode.rotation * Vector3.up * startNode.tangent * (0.1f + hair.stiffness);
+			float totalDeltaTime = 100;// (strand.length - (startIndex + 1) * strand.length) / Mathf.Max(v0.magnitude, 0.0001f) * 10;
+
+			int stepCount = strand.nodeCount - startIndex;
+			float totalLength = strand.length;
+			float stepLength = totalLength / strand.nodeCount;
+			float deltaTime = totalDeltaTime / Mathf.Max(stepCount, 1.0f);
+			float scaleRatio = 1.0f / bodyRadius;   // note: all measurements must be adjusted to match mesh rescaling on the target hair body.
+			float gravityAccel = 9.81f * scaleRatio;
+
+			Vector3 prevVel = startNode.rotation * (Vector3.up * startNode.tangent * (0.1f + hair.stiffness));    // TODO: Needs testing, tangent/speed may be excessive!!!
+			Vector3 prevPos = startNode.position;
+
+			for (int i = 0; i < stepCount; ++i)
+			{
+				int index = i + startIndex;
+				float segmentLength = stepLength < totalLength ? stepLength : Mathf.Abs(totalLength - stepLength);
+				float curLength = segmentLength * scaleRatio;
+				totalLength -= stepLength;
+				HGNode curNode = strand.nodes[index];
+
+				// Iteratively calculate next nodes' 'velocity' using a ballistic trajectory:
+				Vector3 curVel = prevVel - Vector3.up * gravityAccel * deltaTime;
+
+				// Apply upwards curling of loose ends of hair: (note: use a quaternion to rotate the velocity or something...)
+				Vector3 curlAxis = Vector3.Cross(curVel, Vector3.up).normalized;
+				float curlAmount = hair.curlUp * deltaTime;
+				Quaternion curlRotation = Quaternion.AngleAxis(curlAmount, curlAxis);			// >>>		TODO: Calculate rotation axis differently!		<<<
+				curVel = curlRotation * curVel;
+
+				// Calculate position change based on the velocity that was calculated above:
+				Vector3 curOffset = curVel * deltaTime;
+
+				// Force-adjust distance between nodes to never differ from the corresponding segment's length:
+				Vector3 curOffsetDir = curOffset.normalized;
+				Vector3 curPos = prevPos + curOffsetDir * curLength * 4;
+
+				// Apply position and orientation to node:
+				curNode.position = curPos;
+				curNode.rotation = Quaternion.LookRotation(curVel, curNode.rotation * Vector3.forward);
+				strand.nodes[index] = curNode;
+
+				// Update trajectory data for next node:
+				prevPos = curPos;
+				prevVel = curVel;
+			}
+			// NOTE: I'm iterating along the function rather then parametrizing along its length because them maths are kinda hard and I don't trust my results.
+			// There is a chance that this negatively affects runtime performance, but right now, the main priority is to just get the system running reliably.
+
+
+			// TODO: Check for intersections/collisions with hair body!!!
 		}
 
 		private static void buildStrandGeometry(ref HGStrand strand, HGHair hair, float bodyRadius)
@@ -254,27 +402,41 @@ namespace UHairGen
 			float w = strand.width;
 			float l = strand.length;
 			float sl0 = hair.segmentLength;
-			Vector3 forward = strand.forward;
-			Vector3 up = strand.normal;
-			Vector3 right = -Vector3.Cross(forward, up); // todo: test if this needs flipping first.
-			Vector3 origin = forward * bodyRadius;
-			Vector3 segWidth = right * w * 0.5f;
 			Color defaultVertexColor = Color.white;
+
+			HGNode originNode = strand.nodes[0];
+			Vector3 originPosition = originNode.position;
+			Quaternion originRotation = originNode.rotation;
+
+			Vector3 forward = originRotation * Vector3.up;
+			Vector3 up = originRotation * Vector3.forward;
+			Vector3 right = Vector3.Cross(forward, up);
+			Vector3 segWidth = right * w * 0.5f;
 
 			int vBaseIndex = vCounter;
 			int tBaseIndex = tCounter;
 
 			// Create the base vertices:
-			verts[vCounter++] = origin - segWidth;
-			verts[vCounter++] = origin + segWidth;
+			verts[vCounter++] = originPosition - segWidth;
+			verts[vCounter++] = originPosition + segWidth;
 			uvs[vBaseIndex] = new Vector2(0, 0);
 			uvs[vBaseIndex + 1] = new Vector2(1, 0);
 			colors[vBaseIndex] = defaultVertexColor;
 			colors[vBaseIndex + 1] = defaultVertexColor;
 
 			// Iterate over the strand's segments/quads and generate geometry:
-			for (int i = 0; i < strand.segments; ++i)
+			for (int i = 0; i < strand.nodeCount; ++i)
 			{
+				// Get the node we're currently working with:
+				HGNode node = strand.nodes[i];
+				Quaternion nodeRotation = node.rotation;
+
+				// Apply the node and its parent's transformation:
+				forward = nodeRotation * Vector3.up;
+				up = nodeRotation * Vector3.forward;
+				right = Vector3.Cross(forward, up);
+				segWidth = right * w * 0.5f;
+
 				// Adjust length of segments to properly match total strand length:
 				l -= sl0;
 				float sl = l > 0 ? sl0 : Mathf.Abs(l);
@@ -282,7 +444,7 @@ namespace UHairGen
 				int curIndex = vCounter;
 
 				// Create vertices:
-				Vector3 segPos = origin + forward * curLength;
+				Vector3 segPos = node.position;
 				verts[vCounter++] = segPos - segWidth;
 				verts[vCounter++] = segPos + segWidth;
 
@@ -292,8 +454,9 @@ namespace UHairGen
 				uvs[curIndex + 1] = new Vector2(1.0f, uvY);
 
 				// Set placeholder vertex colors:
-				colors[curIndex] = defaultVertexColor;
-				colors[curIndex + 1] = defaultVertexColor;
+				Color col = strand.isAnchored ? Color.red : defaultVertexColor;	//TEST
+				colors[curIndex] = col;
+				colors[curIndex + 1] = col;
 
 				// Create triangles:
 				indices[tCounter++] = curIndex;

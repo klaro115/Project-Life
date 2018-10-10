@@ -2120,7 +2120,7 @@ MeshRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1854826079570550}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -2164,7 +2164,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: c33882c247106574bb8a161ac2c931b2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2346,9 +2346,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hair: {fileID: 11400000, guid: 148d58d2bf99f4a898a15d513c67f72a, type: 2}
-  radiusX: 0.069
-  radiusY: 0.091
-  radiusZ: 0.093
+  radiusX: 0.07
+  radiusY: 0.09
+  radiusZ: 0.0935
 --- !u!114 &114304490491573924
 MonoBehaviour:
   m_ObjectHideFlags: 1

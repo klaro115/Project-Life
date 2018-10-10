@@ -28,10 +28,10 @@ MonoBehaviour:
       min: 0.56666666
       max: 0.7
   - x: 0.5
-    y: 0.8
+    y: 0.7
     length:
-      min: 0.64583355
-      max: 0.775
+      min: 0.5886907
+      max: 0.7178571
   - x: 0.75
     y: 0.55
     length:
@@ -49,18 +49,21 @@ MonoBehaviour:
   minLengthThreshold: 0.005
   posXRandom: 0
   posYRandom: 0.02
-  segmentLength: 0.03
+  segmentLength: 0.06
   segmentWidth: 0.3
   ringSpacing: 0.03
+  meshOffset: {x: 0, y: 0.04, z: 0.035}
   anchors:
   - name: Ponytail
     x: 0.5
     y: 0.4
-    pullRadius: 0
+    pullRadius: 0.7
+    centerRadius: 0
     overwriteStiffness: 0
     type: 0
     exitDirection: {x: 0, y: 0, z: 0}
     splineNodes: []
   anchorPullFactor: 0.8
   anchorMinWeightThreshold: 0.1
-  stiffness: 0.9
+  stiffness: 6000
+  curlUp: 5

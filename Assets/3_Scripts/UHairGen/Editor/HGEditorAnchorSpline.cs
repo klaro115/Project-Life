@@ -25,6 +25,8 @@ namespace UHairGen
 		{
 			get { return body; }
 		}
+		//temp (the compiler won't shut up without this...)
+		public int AnchorIndex { get { return anchorIndex; } }
 
 		#endregion
 		#region Methods
