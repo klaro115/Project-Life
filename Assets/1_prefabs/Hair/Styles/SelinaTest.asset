@@ -15,36 +15,36 @@ MonoBehaviour:
   - x: 0
     y: 0.35
     length:
-      min: 0.27916667
-      max: 0.41666648
+      min: 0.13059524
+      max: 0.2680949
   - x: 0.15
     y: 0.35
     length:
-      min: 0.2875
-      max: 0.42083335
+      min: 0.16749999
+      max: 0.30083326
   - x: 0.25
     y: 0.55
     length:
-      min: 0.56666666
-      max: 0.7
+      min: 0.42952383
+      max: 0.56285703
   - x: 0.5
-    y: 0.7
+    y: 0.8
     length:
-      min: 0.5886907
-      max: 0.7178571
+      min: 0.48583356
+      max: 0.615
   - x: 0.75
     y: 0.55
     length:
-      min: 0.5625
-      max: 0.69583327
+      min: 0.4367857
+      max: 0.5701189
   - x: 0.85
     y: 0.35
     length:
-      min: 0.27916667
-      max: 0.42499992
+      min: 0.15916668
+      max: 0.30499977
   topRegionLength:
-    min: 0.34
-    max: 0.4
+    min: 0.2
+    max: 0.25
   lengthRandom: 0
   minLengthThreshold: 0.005
   posXRandom: 0
@@ -65,5 +65,5 @@ MonoBehaviour:
     splineNodes: []
   anchorPullFactor: 0.8
   anchorMinWeightThreshold: 0.1
-  stiffness: 6000
-  curlUp: 5
+  stiffness: 10000
+  curlUp: 0

@@ -218,7 +218,7 @@ namespace UHairGen
 			}
 
 			// Apply gravity to lower, potentially freely dangling section of the strand:
-			int freeDanglingIndex = Mathf.Max(state.prevIndex + 1, 0);
+			int freeDanglingIndex = Mathf.Max(state.prevIndex + 1, 1);
 			if(freeDanglingIndex < strand.nodeCount - 1)
 			{
 				//Debug.Log("Applying gravity to strand at " + strand.x + "," + strand.y + " => Loose node index: " + freeDanglingIndex);
@@ -231,7 +231,7 @@ namespace UHairGen
 			HGAnchor[] anchors = hair.anchors;
 
 			// If no anchor is currently acting upon this node, try finding one that does:			//TEMP: disabled for testing.
-			if(false && state.curIndex < 0 && !(settings.singleAnchor && strand.isAnchored))
+			if(state.curIndex < 0 && !(settings.singleAnchor && strand.isAnchored))
 			{
 				// Figure out which anchor - if any - this strand is attached to:
 				int targetAnchorIndex = -1;
@@ -278,7 +278,6 @@ namespace UHairGen
 			if (state.curIndex >= 0)
 			{
 				HGAnchor anchor = anchors[state.curIndex];
-				Debug.Log("Strand at " + strand.x + "," + strand.y + " anchored to point " + anchor.x + "," + anchor.y);
 				
 				// Mark anchored strands for later vertex-coloring and modulation:
 				strand.isAnchored = true;
@@ -364,10 +363,10 @@ namespace UHairGen
 				// Iteratively calculate next nodes' 'velocity' using a ballistic trajectory:
 				Vector3 curVel = prevVel - Vector3.up * gravityAccel * deltaTime;
 
-				// Apply upwards curling of loose ends of hair: (note: use a quaternion to rotate the velocity or something...)
-				Vector3 curlAxis = Vector3.Cross(curVel, Vector3.up).normalized;
+				// Apply upwards curling of loose ends of hair by simply rotating the flow direction, pitching it upwards:
+				Vector3 curlAxis = -Vector3.Cross(Vector3.up, Vector3.Scale(prevPos, new Vector3(1, 0, 1))).normalized;
 				float curlAmount = hair.curlUp * deltaTime;
-				Quaternion curlRotation = Quaternion.AngleAxis(curlAmount, curlAxis);			// >>>		TODO: Calculate rotation axis differently!		<<<
+				Quaternion curlRotation = Quaternion.AngleAxis(curlAmount, curlAxis);
 				curVel = curlRotation * curVel;
 
 				// Calculate position change based on the velocity that was calculated above:
@@ -417,8 +416,8 @@ namespace UHairGen
 			int tBaseIndex = tCounter;
 
 			// Create the base vertices:
-			verts[vCounter++] = originPosition - segWidth;
 			verts[vCounter++] = originPosition + segWidth;
+			verts[vCounter++] = originPosition - segWidth;
 			uvs[vBaseIndex] = new Vector2(0, 0);
 			uvs[vBaseIndex + 1] = new Vector2(1, 0);
 			colors[vBaseIndex] = defaultVertexColor;
