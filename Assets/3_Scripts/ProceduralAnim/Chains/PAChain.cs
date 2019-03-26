@@ -11,23 +11,48 @@ namespace ProceduralAnim
 		#region Fields
 
 		[Header("Behaviour")]
-		public PAChainTargeting targetingMethod = PAChainTargeting.End;
-		private PAEndpoint alternatingLastTarget = null;
+		[Range(0.0f, 1.0f)]
+		public float ratioMove2Interact = 0.5f;     // Priorisation for automatic targeting of chain endpoint. 0=movement only, 1=interaction only
+		public float endpointReachDefering = 0.05f;	// Amount of total movement range to defer to joints beyond minimum required range limits, aka pose smoothing.
 
 		[Header("Endpoints")]
 		public PAEndpoint end = null;
 		public Transform root = null;
 
-		//[Header("Chain ")]
-		[HideInInspector]
+		[Header("Chain ")]
 		public PAChainJoint[] joints = null;
+		public float maxReachSq = 1.0f;
 
 		#endregion
 		#region Methods
 
+		public void DrawGizmos()
+		{
+			if(joints != null)
+			{
+				Gizmos.color = Color.green;
+				PAJoint firstJoint = joints[0].joint;
+				PAJoint prevJoint = firstJoint;
+				for(int i = 1; i < joints.Length; ++i)
+				{
+					PAJoint joint = joints[i].joint;
+					if (prevJoint != null && joint != null)
+						Gizmos.DrawLine(prevJoint.transform.position, joint.transform.position);
+					prevJoint = joint;
+				}
+				Gizmos.color = Color.yellow;
+				if (firstJoint != null && end != null) Gizmos.DrawLine(firstJoint.transform.position, end.ContactPoint);
+				if (prevJoint != null && root != null) Gizmos.DrawLine(prevJoint.transform.position, root.position);
+			}
+		}
+
 		public bool GenerateChain()
 		{
-			if (end == null || root == null) return false;
+			if (end == null || root == null)
+			{
+				Debug.LogError("[PAChain] Error! Unable to generate chain from null root or endpoint! Aborting...");
+				return false;
+			}
 
 			Transform[] transformChain = GetHierarchyToRoot(root, end.transform).ToArray();
 
@@ -56,6 +81,7 @@ namespace ProceduralAnim
 
 			Transform parentJoint = root;
 			PAChainJoint[] chainJoints = new PAChainJoint[transformCount];
+			float maxEndpointReach = 0.0f;
 			for (int i = 0; i < transformCount; ++i)
 			{
 				PAJoint joint = jointList[i];
@@ -64,14 +90,17 @@ namespace ProceduralAnim
 					Transform trans = joint.transform;
 					Vector3 hierarchyOffset = parentJoint.InverseTransformPoint(trans.position);
 					Quaternion hierarchyRotation = trans.rotation * Quaternion.Inverse(parentJoint.rotation);
+					maxEndpointReach += Vector3.Distance(trans.position, parentJoint.position);
+					float maxEndpointReachSq = maxEndpointReach * maxEndpointReach;
 
-					PAChainJoint chainJoint = new PAChainJoint(joint, hierarchyOffset, hierarchyRotation);
+					PAChainJoint chainJoint = new PAChainJoint(joint, hierarchyOffset, hierarchyRotation, maxEndpointReachSq);
 					chainJoints[i] = chainJoint;
 
 					parentJoint = joint.transform;
 				}
 				else chainJoints[i] = PAChainJoint.None;
 			}
+			maxReachSq = maxEndpointReach;
 
 			joints = chainJoints.Where(o => o.joint != null).ToArray();
 			return true;
@@ -80,48 +109,7 @@ namespace ProceduralAnim
 		#endregion
 		#region Methods Targeting
 
-		/*
-		private PAEndpoint GetClosestEndpoint(Vector3 targetPoint, float weightShift = 0.0f)
-		{
-			float distSqStart = Vector3.SqrMagnitude(start.ContactPoint - targetPoint) * (1 + weightShift);
-			float distSqEnd = Vector3.SqrMagnitude(end.ContactPoint - targetPoint) * (1 - weightShift);
-			return distSqStart < distSqEnd ? start : end;
-		}
-		private PAEndpoint GetAlternatingEndpoint()
-		{
-			PAEndpoint alternatingNewTarget = start;
-			if (alternatingLastTarget == alternatingNewTarget) alternatingNewTarget = end;
-			alternatingLastTarget = alternatingNewTarget;
-			return alternatingNewTarget;
-		}
-		private PAEndpoint GetTargetEndpoint(Vector3 targetPoint)
-		{
-			switch (targetingMethod)
-			{
-				case PAChainTargeting.End:
-					return end;
-				case PAChainTargeting.Start:
-					return start;
-				case PAChainTargeting.Closest:
-					return GetClosestEndpoint(targetPoint);
-				case PAChainTargeting.Alternating:
-					return GetAlternatingEndpoint();
-				case PAChainTargeting.AlternatingClosest:
-					{
-						PAEndpoint altEP = GetAlternatingEndpoint();
-						float weightShift = PAConstants.endpointAlternatingWeight * (altEP == start ? -1 : 1);
-						return GetClosestEndpoint(targetPoint, weightShift);
-					}
-				case PAChainTargeting.Preferential:
-					return GetClosestEndpoint(targetPoint, PAConstants.endpointPreferentialWeight);
-				default:
-					break;
-			}
-			return end;
-		}
-		*/
-
-		public void ResetTargets()
+		public void ResetTarget()
 		{
 			if (end != null) end.ResetTarget();
 		}
@@ -168,6 +156,18 @@ namespace ProceduralAnim
 			return hierarchy;
 		}
 
+		public override string ToString()
+		{
+			int jointCount = joints != null ? joints.Length : 0;
+			string nullTxt = "NULL";
+			string rootName = root != null ? root.name : nullTxt;
+			string endName = end != null ? end.name : nullTxt;
+			return $"{rootName}-{endName} ({jointCount})";
+		}
+
+		#endregion
+
+		/*
 		public static Transform[] FindHierarchyChain(Transform root, Transform start, Transform end, out int intersectNodeIndex, bool discardIntersectNode = true)
 		{
 			intersectNodeIndex = -1;
@@ -215,13 +215,47 @@ namespace ProceduralAnim
 
 			return chain.ToArray();
 		}
+		*/
 
-		public override string ToString()
+		/*
+		private PAEndpoint GetClosestEndpoint(Vector3 targetPoint, float weightShift = 0.0f)
 		{
-			int jointCount = joints != null ? joints.Length : 0;
-			return $"{root?.name}-{end?.name} ({jointCount})";
+			float distSqStart = Vector3.SqrMagnitude(start.ContactPoint - targetPoint) * (1 + weightShift);
+			float distSqEnd = Vector3.SqrMagnitude(end.ContactPoint - targetPoint) * (1 - weightShift);
+			return distSqStart < distSqEnd ? start : end;
 		}
-
-		#endregion
+		private PAEndpoint GetAlternatingEndpoint()
+		{
+			PAEndpoint alternatingNewTarget = start;
+			if (alternatingLastTarget == alternatingNewTarget) alternatingNewTarget = end;
+			alternatingLastTarget = alternatingNewTarget;
+			return alternatingNewTarget;
+		}
+		private PAEndpoint GetTargetEndpoint(Vector3 targetPoint)
+		{
+			switch (targetingMethod)
+			{
+				case PAChainTargeting.End:
+					return end;
+				case PAChainTargeting.Start:
+					return start;
+				case PAChainTargeting.Closest:
+					return GetClosestEndpoint(targetPoint);
+				case PAChainTargeting.Alternating:
+					return GetAlternatingEndpoint();
+				case PAChainTargeting.AlternatingClosest:
+					{
+						PAEndpoint altEP = GetAlternatingEndpoint();
+						float weightShift = PAConstants.endpointAlternatingWeight * (altEP == start ? -1 : 1);
+						return GetClosestEndpoint(targetPoint, weightShift);
+					}
+				case PAChainTargeting.Preferential:
+					return GetClosestEndpoint(targetPoint, PAConstants.endpointPreferentialWeight);
+				default:
+					break;
+			}
+			return end;
+		}
+		*/
 	}
 }
