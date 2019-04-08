@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace ProceduralAnim
 {
+	[AddComponentMenu("Scripts/ProcAnim/Animator")]
 	public class PAAnimator : MonoBehaviour
 	{
 		#region Fields
@@ -29,7 +30,9 @@ namespace ProceduralAnim
 			if(chains != null)
 			{
 				foreach (PAChain chain in chains)
-					chain.DrawGizmos();
+				{
+					if(chain != null) chain.OnDrawGizmosSelected();
+				}
 			}
 		}
 

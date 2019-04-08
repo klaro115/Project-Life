@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ProceduralAnim
 {
@@ -14,6 +12,7 @@ namespace ProceduralAnim
 	 * Mass [%]:	7.3		50.7	2.6		1.6		0.7		10.3	4.3		1.5
 	 */
 
+	[AddComponentMenu("Scripts/ProcAnim/Joint")]
 	public class PAJoint : MonoBehaviour
 	{
 		#region Fields

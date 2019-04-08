@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace ProceduralAnim
 {
-	[System.Serializable]
-	public class PAChain
+	[AddComponentMenu("Scripts/ProcAnim/Chain")]
+	public class PAChain : MonoBehaviour
 	{
 		#region Fields
 
@@ -18,6 +18,7 @@ namespace ProceduralAnim
 		[Header("Endpoints")]
 		public PAEndpoint end = null;
 		public Transform root = null;
+		public PAChain rootChain = null;
 
 		[Header("Chain ")]
 		public PAChainJoint[] joints = null;
@@ -26,9 +27,9 @@ namespace ProceduralAnim
 		#endregion
 		#region Methods
 
-		public void DrawGizmos()
+		public void OnDrawGizmosSelected()
 		{
-			if(joints != null)
+			if(joints != null && joints.Length != 0)
 			{
 				Gizmos.color = Color.green;
 				PAJoint firstJoint = joints[0].joint;
@@ -46,7 +47,7 @@ namespace ProceduralAnim
 			}
 		}
 
-		public bool GenerateChain()
+		public bool GenerateChain(int order = 0)
 		{
 			if (end == null || root == null)
 			{
@@ -54,6 +55,14 @@ namespace ProceduralAnim
 				return false;
 			}
 
+			// If this is a higher order (aka connected) chain, don't regenerate chain if it's already been done before:
+			if (order > 0 && joints != null) return true;
+
+			// Don't allow loops in connected chains' graph:
+			if (rootChain == this) rootChain = null;
+			if (rootChain != null && rootChain.rootChain == this) rootChain = null;
+
+			// Trace skeleton hierarchy back to the given root:
 			Transform[] transformChain = GetHierarchyToRoot(root, end.transform).ToArray();
 
 			if (transformChain == null || transformChain.Length == 0)
@@ -62,6 +71,7 @@ namespace ProceduralAnim
 				return false;
 			}
 
+			// Find all joints within the hierarchy in-between root and endpoint:
 			PAJoint[] jointList = new PAJoint[transformChain.Length];
 			int jointCount = 0;
 			int transformCount = transformChain.Length;
@@ -75,10 +85,12 @@ namespace ProceduralAnim
 
 			if(jointCount == 0)
 			{
+				Debug.LogError($"[PAChain] Error! Please make sure there is at least 1 joint (PAJoint) in-between the root and endpoint of a chain! ({this})");
 				joints = null;
 				return false;
 			}
 
+			// Gather further chain-specific details about the joint, and derive some details for the chain itself:
 			Transform parentJoint = root;
 			PAChainJoint[] chainJoints = new PAChainJoint[transformCount];
 			float maxEndpointReach = 0.0f;
@@ -102,7 +114,55 @@ namespace ProceduralAnim
 			}
 			maxReachSq = maxEndpointReach;
 
+			// Discard all empty/null joints from assembly array (aka retain only proper joints):
 			joints = chainJoints.Where(o => o.joint != null).ToArray();
+
+			// Append joints of another chain connected at root to the joints array, though at a higher order:
+			if(rootChain != null && rootChain.GenerateChain(order + 1) && order < PAConstants.maxChainOrder)
+			{
+				// Iterate over connected chain's joints and find hierarchy intersect with this chain's root:
+				List<PAChainJoint> allJoints = new List<PAChainJoint>(joints);
+				int lastHigherJointIndex = -1;
+				for(int i = 0; i < rootChain.joints.Length; ++i)
+				{
+					PAChainJoint rootJoint = rootChain.joints[i];
+					PAJoint rj = rootJoint.joint;
+
+					if (rj == null) break;
+
+					Transform trans = rj.transform;
+					bool found = false;
+					int hierarchyDepth = 0;
+					while (trans != null && !found && hierarchyDepth++ < PAConstants.maxHierarchySearchDepth)
+					{
+						if(trans == root) found = true;
+						trans = trans.parent;
+					}
+					if (found) lastHigherJointIndex = i;
+				}
+				// If an intersect was found along the joints of the connected chain's hierarchy:
+				if(lastHigherJointIndex > -1 && lastHigherJointIndex < rootChain.joints.Length)
+				{
+					// Avoid repetitive addition in case the root is a joint as well:
+					if (rootChain.joints[lastHigherJointIndex].joint.transform == joints[joints.Length - 1].joint)
+						lastHigherJointIndex++;
+
+					// Add all joints to this chain that hold a higher position in hierarchy than the root:
+					int rootBaseOrder = rootChain.joints[0].order;
+					for(int i = lastHigherJointIndex + 1; i < rootChain.joints.Length; ++i)
+					{
+						PAChainJoint newJoint = rootChain.joints[i];
+						int rootJointOrder = newJoint.order - rootBaseOrder;
+						int newJointOrder = order + rootJointOrder;
+						allJoints.Add(new PAChainJoint(newJoint, newJointOrder));
+					}
+
+					// TODO: Change original root joint's hierarchy offsets to match the connected chain's transform, rather than the root's.
+
+					joints = allJoints.ToArray();
+				}
+			}
+
 			return true;
 		}
 

@@ -8,12 +8,21 @@ namespace ProceduralAnim
 	{
 		#region Constructors
 
-		public PAChainJoint(PAJoint _joint, Vector3 _hierarchyOffset, Quaternion _hierarchyRotation, float _maxEndpointReachSq)
+		public PAChainJoint(PAJoint _joint, Vector3 _hierarchyOffset, Quaternion _hierarchyRotation, float _maxEndpointReachSq, int _order = 0)
 		{
 			joint = _joint;
 			hierarchyOffset = _hierarchyOffset;
 			hierarchyRotation = _hierarchyRotation;
 			maxEndpointReachSq = _maxEndpointReachSq;
+			order = _order;
+		}
+		public PAChainJoint(PAChainJoint other, int _order = 0)
+		{
+			joint = other.joint;
+			hierarchyOffset = other.hierarchyOffset;
+			hierarchyRotation = other.hierarchyRotation;
+			maxEndpointReachSq = other.maxEndpointReachSq;
+			order = _order;
 		}
 
 		#endregion
@@ -23,6 +32,7 @@ namespace ProceduralAnim
 		public Vector3 hierarchyOffset;
 		public Quaternion hierarchyRotation;
 		public float maxEndpointReachSq;
+		public int order;
 
 		#endregion
 		#region Properties
