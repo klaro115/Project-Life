@@ -11,11 +11,12 @@ namespace ProceduralAnim.IK
 		public int maxIndex;
 		public Vector3 offset;
 		public Quaternion rotation;
+		public float distanceSq;
 
 		#endregion
 		#region Properties
 
-		public static PASolverReachResult None => new PASolverReachResult() { outOfReach = true, maxIndex = -1 };
+		public static PASolverReachResult None => new PASolverReachResult() { outOfReach = true, maxIndex = -1, distanceSq = float.PositiveInfinity };
 
 		#endregion
 	}

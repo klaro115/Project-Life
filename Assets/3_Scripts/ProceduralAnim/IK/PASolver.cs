@@ -5,15 +5,35 @@ namespace ProceduralAnim.IK
 {
 	public static class PASolver
 	{
+		#region Types
+
+		public enum IntersectType
+		{
+			Circle,
+			TwoPoints,
+			Point
+		}
+		public struct Intersect
+		{
+			public IntersectType type;
+			public Vector3 center;
+			public Vector3 pointA;
+			public Vector3 pointB;
+			public float radius;
+			public float spacingRatio;
+		}
+
+		#endregion
 		#region Fields
 
 		private static int jointBallCount = 0;
 		private static int[] jointBallList = new int[PAConstants.maxSolverJointListLength];
+		private static Intersect[] intersectBuffer = new Intersect[PAConstants.maxSolverJointListLength];
 
 		#endregion
 		#region Methods
 
-		public static PASolverState SolveChain(PAChain chain, PASolverPolicy policy)
+		public static PASolverState SolveChain(PAChain chain, PASolverPolicy policy, float urgency = PAConstants.jointDefaultUrgency)
 		{
 			if(chain == null)
 			{
@@ -37,17 +57,66 @@ namespace ProceduralAnim.IK
 				return PASolverState.OutOfReach;
 			}
 
-			// TODO: Algorithm layout:
-			//
-			// 1. Determine target pose for endpoint.
-			// 2. Derive outer-most joint's target pose from endpoint => joint is 'fixed'.
-			// 3. Calculate offsets (rotation & position) from first (fixed) joint to last.
-			//  3.1 Calculate fraction of offset to distribute to each ball joint.
-			// 4. Move up chain, iterating over ball joints only:
-			//  4.1 Draw offsets from previous fixed joint's pose to current ball joint.
-			//  4.2 Equally divide offsets to distribute between ball and hinge joints after previous fixed joint.
-			//  4.2 Iterate over .
-			//   4.2.1 
+			// 1. Determine outer-most joint pose from endpoint targets:
+			PAChainJoint endChainJoint = jointList[0];
+			PAJoint endJoint = endChainJoint.joint;
+			Vector3 endJointPos = targetPoint - end.ContactOffset + endJoint.transform.InverseTransformDirection(endChainJoint.hierarchyOffset);
+			Quaternion endJointRot = targetRot * Quaternion.Inverse(end.ContactRotationOffset) * Quaternion.Inverse(endChainJoint.hierarchyRotation);
+			endJoint.SetTargets(endJointPos, endJointRot, urgency);
+
+			// 2. Draw line from inner-most to endpoint joint:
+			PAChainJoint curChainJoint = jointList[reachResult.maxIndex];
+			PAJoint curJoint = curChainJoint.joint;
+			Transform curTrans = curJoint.transform;
+			Vector3 curEndOffset = endJointPos - curTrans.position;
+			float curEndDist = curEndOffset.magnitude;
+			float endDistance = Mathf.Sqrt(reachResult.distanceSq);
+			Vector3 curEndDir = curEndOffset / curEndDist;
+
+			// 3. For each joint, determine target spacing and reference points:
+			for(int i = 0; i < reachResult.maxIndex; ++i)
+			{
+				PAChainJoint spacingJoint = jointList[i];
+				float spacingRatio = spacingJoint.maxEndpointReach / endDistance;
+				float spacingDistance = spacingRatio * endDistance;
+				Vector3 intersectCenter = endJointPos - curEndDir * spacingDistance;
+				float intersectRadius = Mathf.Sqrt(spacingJoint.segmentLength * spacingJoint.segmentLength - spacingDistance * spacingDistance);
+				IntersectType intersectType = spacingJoint.joint.type == PAJointType.Ball ? IntersectType.Circle : IntersectType.TwoPoints;
+
+				intersectBuffer[i] = new Intersect()
+				{
+					type = intersectType,
+					center = intersectCenter,
+					radius = intersectRadius,
+					spacingRatio = spacingRatio,
+				};
+			}
+
+			// TODO (see right below)
+
+			/* SOLVER ALGORITHM BREAKDOWN:
+
+			1. Determine endpoint joint pose.
+			2. Draw line from inner-most to endpoint joint.
+			3. For each joint, determine target spacing, such that:
+				3.1 Spacing distances match joint length to line length ratio.
+			4. From inner-most joint, derive intersections to next outward joint.
+				4.1 Intersections will be either:
+					- Rings		: sphere shells intersecting
+					- 2 Points	: rings intersecting
+					- 2 Points	: sphere shell & plane intersect
+					- 1 Point	: plane & line intersect
+					- 1 Point	: ring & line intersect
+				4.2 Iterate outward until either:
+					- Only 1 point remains from consecutive intersects.
+					- The enpoint joint has been reached.
+				4.3 Going inward, fix positions based on constraints given by that single-point intersect.
+				4.4 Return to single-point joint to continue stepping.
+			5. Continue stepping outwards until positions have been fixed.
+			6. Iterate from outer-most again, calculate rotations.
+			7. Return resulting pose.
+
+			*/
 
 			// Iterate over all active ball joints in chain:
 			int prevBallIndex = 0;
@@ -84,8 +153,9 @@ namespace ProceduralAnim.IK
 			int lastIndex = jointList.Length - 1;
 			PAJoint lastJoint = jointList[lastIndex].joint;
 			Vector3 lastJointOffset = targetPoint - lastJoint.transform.position;
+			float lastJointDistSq = Vector3.SqrMagnitude(lastJointOffset);
 
-			if (Vector3.SqrMagnitude(lastJointOffset) < maxReachSq)
+			if (lastJointDistSq < maxReachSq)
 			{
 				for (int i = 0; i < jointList.Length; ++i)
 				{
@@ -100,12 +170,19 @@ namespace ProceduralAnim.IK
 
 					if (cjDistSq < cj.maxEndpointReachSq * reachModifier)
 					{
-						return new PASolverReachResult() { outOfReach = false, maxIndex = i, offset = cjOffset, rotation = cjRotOffset };
+						return new PASolverReachResult()
+						{
+							outOfReach = false,
+							maxIndex = i,
+							offset = cjOffset,
+							rotation = cjRotOffset,
+							distanceSq = lastJointDistSq
+						};
 					}
 				}
 			}
 
-			return new PASolverReachResult() { outOfReach = true, maxIndex = lastIndex, offset = lastJointOffset };
+			return new PASolverReachResult() { outOfReach = true, maxIndex = lastIndex, offset = lastJointOffset, distanceSq = lastJointDistSq };
 		}
 
 		#endregion

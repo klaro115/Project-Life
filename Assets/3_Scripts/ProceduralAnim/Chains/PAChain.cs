@@ -102,10 +102,10 @@ namespace ProceduralAnim
 					Transform trans = joint.transform;
 					Vector3 hierarchyOffset = parentJoint.InverseTransformPoint(trans.position);
 					Quaternion hierarchyRotation = trans.rotation * Quaternion.Inverse(parentJoint.rotation);
-					maxEndpointReach += Vector3.Distance(trans.position, parentJoint.position);
-					float maxEndpointReachSq = maxEndpointReach * maxEndpointReach;
+					float segmentLength = Vector3.Distance(trans.position, parentJoint.position);
+					maxEndpointReach += segmentLength;
 
-					PAChainJoint chainJoint = new PAChainJoint(joint, hierarchyOffset, hierarchyRotation, maxEndpointReachSq);
+					PAChainJoint chainJoint = new PAChainJoint(joint, hierarchyOffset, hierarchyRotation, maxEndpointReach, segmentLength);
 					chainJoints[i] = chainJoint;
 
 					parentJoint = joint.transform;

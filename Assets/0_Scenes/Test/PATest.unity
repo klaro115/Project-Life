@@ -137,12 +137,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 214103104}
-  m_LocalRotation: {x: -0, y: -0, z: -3.6138475e-13, w: 1}
+  m_LocalRotation: {x: -0.0000004233884, y: -0.00000085355373, z: 0.0000287483, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1335934815}
-  m_RootOrder: 8
+  m_Father: {fileID: 1335934785}
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &214103106
 MonoBehaviour:
@@ -165,18 +165,24 @@ MonoBehaviour:
   - joint: {fileID: 1335934818}
     hierarchyOffset: {x: -0.08938731, y: -0.8724535, z: -0.017030943}
     hierarchyRotation: {x: 0.10378219, y: 0.48654938, z: 0.86738616, w: -0.0118531855}
+    maxEndpointReach: 0.877186
     maxEndpointReachSq: 0.76945525
+    segmentLength: 0.877186
     order: 0
   - joint: {fileID: 1335934825}
     hierarchyOffset: {x: 0.03689392, y: -0.19347495, z: 0.35284966}
     hierarchyRotation: {x: 0.5104629, y: -0.1036156, z: -0.0143967485, w: 0.8535131}
+    maxEndpointReach: 1.2812859
     maxEndpointReachSq: 1.6416935
+    segmentLength: 0.40409985
     order: 0
   - joint: {fileID: 1335934826}
     hierarchyOffset: {x: -0.00028105616, y: -0.42334056, z: -0.022540327}
     hierarchyRotation: {x: -0.026593495, y: -0.00000038830285, z: -0.00034977822,
       w: 0.99964637}
+    maxEndpointReach: 1.7052262
     maxEndpointReachSq: 2.9077964
+    segmentLength: 0.42394036
     order: 0
   maxReachSq: 1.7052262
 --- !u!1 &262993519
@@ -203,12 +209,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 262993519}
-  m_LocalRotation: {x: -0, y: -0, z: -3.6138475e-13, w: 1}
+  m_LocalRotation: {x: -0.0000004233884, y: -0.00000085355373, z: 0.0000287483, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1335934815}
-  m_RootOrder: 7
+  m_Father: {fileID: 1335934785}
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &262993521
 MonoBehaviour:
@@ -232,27 +238,37 @@ MonoBehaviour:
     hierarchyOffset: {x: -0.000022138986, y: 0.46652263, z: -0.015780536}
     hierarchyRotation: {x: -0.00000038556755, y: -0.00000085356544, z: 0.000028748304,
       w: 1.0000001}
+    maxEndpointReach: 0.46678942
     maxEndpointReachSq: 0.21789236
+    segmentLength: 0.46678942
     order: 0
   - joint: {fileID: 1335934810}
     hierarchyOffset: {x: -3.3253521e-12, y: -0.060923476, z: -0.0034678262}
     hierarchyRotation: {x: 0, y: 0, z: 0, w: 1.0000002}
+    maxEndpointReach: 0.5278114
     maxEndpointReachSq: 0.27858487
+    segmentLength: 0.061021954
     order: 0
   - joint: {fileID: 1335934808}
     hierarchyOffset: {x: 9.1292533e-14, y: -0.12167976, z: 0.005774418}
     hierarchyRotation: {x: -0.023707936, y: -1.080757e-13, z: -5.378792e-13, w: 0.9997191}
+    maxEndpointReach: 0.6496281
     maxEndpointReachSq: 0.42201668
+    segmentLength: 0.12181672
     order: 0
   - joint: {fileID: 1335934807}
     hierarchyOffset: {x: 1.0102762e-20, y: -0.10828151, z: -1.3011969e-10}
     hierarchyRotation: {x: 0, y: 0, z: 0, w: 1.0000001}
+    maxEndpointReach: 0.7579096
     maxEndpointReachSq: 0.57442695
+    segmentLength: 0.1082815
     order: 0
   - joint: {fileID: 1335934806}
     hierarchyOffset: {x: 3.519854e-13, y: -0.0947464, z: -7.1984074e-10}
     hierarchyRotation: {x: 7.3879727e-26, y: 1.1365489e-13, z: -2.6952756e-15, w: 1.0000001}
+    maxEndpointReach: 0.852656
     maxEndpointReachSq: 0.7270223
+    segmentLength: 0.0947464
     order: 0
   maxReachSq: 0.852656
 --- !u!1 &289090842
@@ -279,12 +295,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 289090842}
-  m_LocalRotation: {x: -0, y: -0, z: -3.6138475e-13, w: 1}
+  m_LocalRotation: {x: -0.0000004233884, y: -0.00000085355373, z: 0.0000287483, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1335934815}
-  m_RootOrder: 5
+  m_Father: {fileID: 1335934785}
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &289090844
 MonoBehaviour:
@@ -307,38 +323,52 @@ MonoBehaviour:
   - joint: {fileID: 1335934829}
     hierarchyOffset: {x: 0.5861375, y: 0.091919266, z: -0.00085291185}
     hierarchyRotation: {x: -0.49015844, y: -0.50544363, z: 0.52953076, w: -0.4731459}
+    maxEndpointReach: 0.59330183
     maxEndpointReachSq: 0.35200706
+    segmentLength: 0.59330183
     order: 0
   - joint: {fileID: 1335934794}
     hierarchyOffset: {x: 0.016480027, y: -0.22907087, z: -0.0014970585}
     hierarchyRotation: {x: -0.01695329, y: -0.035964478, z: -0.0024583435, w: 0.99920475}
+    maxEndpointReach: 0.82296956
     maxEndpointReachSq: 0.6772789
+    segmentLength: 0.22966772
     order: 0
   - joint: {fileID: 1335934795}
     hierarchyOffset: {x: 0.000000042606754, y: -0.21397677, z: 0.000000011167051}
     hierarchyRotation: {x: 0.006646866, y: -0.0000003359774, z: -0.00000006293777,
       w: 0.99997646}
+    maxEndpointReach: 1.0369463
     maxEndpointReachSq: 1.0752577
+    segmentLength: 0.21397671
     order: 0
   - joint: {fileID: 1335934796}
     hierarchyOffset: {x: -0.000005378077, y: -0.09578835, z: -0.014658606}
     hierarchyRotation: {x: -0.0114154, y: -0.0010763506, z: -0.07584597, w: 0.9970529}
+    maxEndpointReach: 1.1338497
     maxEndpointReachSq: 1.2856152
+    segmentLength: 0.096903495
     order: 0
   - joint: {fileID: 1335934808}
     hierarchyOffset: {x: -0.00023948663, y: -0.030043572, z: 0.11243678}
     hierarchyRotation: {x: 0.5352613, y: 0.43510622, z: -0.55896497, w: -0.46014807}
+    maxEndpointReach: 1.2502315
     maxEndpointReachSq: 1.5630788
+    segmentLength: 0.11638178
     order: 0
   - joint: {fileID: 1335934807}
     hierarchyOffset: {x: 1.0102762e-20, y: -0.10828151, z: -1.3011969e-10}
     hierarchyRotation: {x: 0, y: 0, z: 0, w: 1.0000001}
+    maxEndpointReach: 0
     maxEndpointReachSq: 0.57442695
+    segmentLength: 0
     order: 0
   - joint: {fileID: 1335934806}
     hierarchyOffset: {x: 3.519854e-13, y: -0.0947464, z: -7.1984074e-10}
     hierarchyRotation: {x: 7.3879727e-26, y: 1.1365489e-13, z: -2.6952756e-15, w: 1.0000001}
+    maxEndpointReach: 0
     maxEndpointReachSq: 0.7270223
+    segmentLength: 0
     order: 0
   maxReachSq: 1.2502315
 --- !u!1 &473967877
@@ -533,12 +563,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 669902188}
-  m_LocalRotation: {x: -0, y: -0, z: -3.6138475e-13, w: 1}
+  m_LocalRotation: {x: -0.0000004233884, y: -0.00000085355373, z: 0.0000287483, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1335934815}
-  m_RootOrder: 6
+  m_Father: {fileID: 1335934785}
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &669902190
 MonoBehaviour:
@@ -561,38 +591,52 @@ MonoBehaviour:
   - joint: {fileID: 1335934830}
     hierarchyOffset: {x: -0.5876758, y: 0.09199386, z: -0.0019796754}
     hierarchyRotation: {x: 0.49521807, y: -0.5033624, z: 0.53165865, w: 0.4676801}
+    maxEndpointReach: 0.5948358
     maxEndpointReachSq: 0.35382965
+    segmentLength: 0.5948358
     order: 0
   - joint: {fileID: 1335934797}
     hierarchyOffset: {x: -0.01666268, y: -0.2305928, z: 0.001960244}
     hierarchyRotation: {x: -0.019715307, y: 0.035972517, z: -0.004918397, w: 0.99914646}
+    maxEndpointReach: 0.82603824
     maxEndpointReachSq: 0.6823392
+    segmentLength: 0.23120245
     order: 0
   - joint: {fileID: 1335934798}
     hierarchyOffset: {x: 0.000000039996614, y: -0.21397993, z: 0.00000019736898}
     hierarchyRotation: {x: -0.0021732606, y: -0.0000000816896, z: -0.00000025127304,
       w: 0.999998}
+    maxEndpointReach: 1.0400181
     maxEndpointReachSq: 1.0816376
+    segmentLength: 0.2139799
     order: 0
   - joint: {fileID: 1335934799}
     hierarchyOffset: {x: 0.0010034754, y: -0.09578821, z: -0.014625224}
     hierarchyRotation: {x: -0.003969187, y: -0.002247691, z: 0.07582533, w: 0.99711096}
+    maxEndpointReach: 1.1369216
     maxEndpointReachSq: 1.2925909
+    segmentLength: 0.0969035
     order: 0
   - joint: {fileID: 1335934808}
     hierarchyOffset: {x: 0.00010140857, y: -0.030091882, z: 0.112443395}
     hierarchyRotation: {x: -0.5327029, y: 0.43660164, z: -0.56138885, w: 0.45874768}
+    maxEndpointReach: 1.2533221
     maxEndpointReachSq: 1.5708164
+    segmentLength: 0.116400436
     order: 0
   - joint: {fileID: 1335934807}
     hierarchyOffset: {x: 1.0102762e-20, y: -0.10828151, z: -1.3011969e-10}
     hierarchyRotation: {x: 0, y: 0, z: 0, w: 1.0000001}
+    maxEndpointReach: 0
     maxEndpointReachSq: 0.57442695
+    segmentLength: 0
     order: 0
   - joint: {fileID: 1335934806}
     hierarchyOffset: {x: 3.519854e-13, y: -0.0947464, z: -7.1984074e-10}
     hierarchyRotation: {x: 7.3879727e-26, y: 1.1365489e-13, z: -2.6952756e-15, w: 1.0000001}
+    maxEndpointReach: 0
     maxEndpointReachSq: 0.7270223
+    segmentLength: 0
     order: 0
   maxReachSq: 1.2533221
 --- !u!1 &794280143
@@ -1554,12 +1598,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1335934781}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &1335934815 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 400004, guid: 8d56da61f156ae747be13af0ae549e12,
-    type: 3}
-  m_PrefabInstance: {fileID: 1335934781}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1335934816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1920,12 +1958,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1566655468}
-  m_LocalRotation: {x: -0, y: -0, z: -3.6138475e-13, w: 1}
+  m_LocalRotation: {x: -0.0000004233884, y: -0.00000085355373, z: 0.0000287483, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1335934815}
-  m_RootOrder: 9
+  m_Father: {fileID: 1335934785}
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1566655470
 MonoBehaviour:
@@ -1948,17 +1986,23 @@ MonoBehaviour:
   - joint: {fileID: 1335934816}
     hierarchyOffset: {x: 0.0894817, y: -0.8724293, z: -0.01702996}
     hierarchyRotation: {x: -0.105809696, y: 0.4829831, z: 0.8691307, w: 0.011991267}
+    maxEndpointReach: 0.8771715
     maxEndpointReachSq: 0.76942986
+    segmentLength: 0.8771715
     order: 0
   - joint: {fileID: 1335934823}
     hierarchyOffset: {x: -0.036912963, y: -0.19821753, z: 0.35010278}
     hierarchyRotation: {x: 0.504619, y: 0.105425455, z: 0.014502353, w: 0.8567586}
+    maxEndpointReach: 1.2811824
     maxEndpointReachSq: 1.6414284
+    segmentLength: 0.40401092
     order: 0
   - joint: {fileID: 1335934824}
     hierarchyOffset: {x: 0.0002957126, y: -0.4236471, z: -0.01542576}
     hierarchyRotation: {x: -0.01819685, y: -0.000002041063, z: 0.00034964233, w: 0.9998345}
+    maxEndpointReach: 1.7051104
     maxEndpointReachSq: 2.9074016
+    segmentLength: 0.42392802
     order: 0
   maxReachSq: 1.7051104
 --- !u!1 &1701897558

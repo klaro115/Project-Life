@@ -33,7 +33,9 @@ namespace ProceduralAnim
 		public IPATarget Target { get => targetInterface; set => SetTarget(value); }
 
 		public Vector3 ContactPoint => transform.TransformPoint(contactOffset);
+		public Vector3 ContactOffset => transform.TransformDirection(contactOffset);
 		public Quaternion ContactRotation => transform.rotation * contactRotation;
+		public Quaternion ContactRotationOffset => contactRotation;
 
 		#endregion
 		#region Methods
