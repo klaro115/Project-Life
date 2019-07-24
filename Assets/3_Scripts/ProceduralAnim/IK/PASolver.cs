@@ -117,6 +117,16 @@ namespace ProceduralAnim.IK
 			7. Return resulting pose.
 
 			*/
+			/* ALTERNATIVE ALGORITHM: (simpler, shorter, more predictable)
+			
+			1. Determine endpoint joint pose.
+			2. For N joints involved, starting from the outer-most one:
+				2.1 Treat previous (outer) joints as 1 joint segment, nicknamed lower segment SL.
+				2.1 Solve single-joint IK for current joint's upper segment SU and SL.
+			3. Iterate over chain until joint N, producing increasingly weaker poses.
+			4. Return resulting pose.
+
+			*/
 
 			// Iterate over all active ball joints in chain:
 			int prevBallIndex = 0;
